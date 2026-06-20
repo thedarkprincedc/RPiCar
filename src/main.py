@@ -1,9 +1,8 @@
 import time
 import threading
-import os
-import json
 from state import State
 from controller_manager import ControllerManager
+from display_live import display_live
 from motor_controller import get_motor_driver, motor_control_data
 
 def translate_controller_tank_drive_data(state, lock):
@@ -52,57 +51,22 @@ def motor_thread(state, lock, stop_event, refresh_rate = 0.02):
         motor_control_data(state, lock, driver)
         time.sleep(refresh_rate)
 
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def display_live(state, lock, stop_event, refresh_rate = 0.05):
+def display_thread(state, lock, stop_event, refresh_rate = 0.05):
     while not stop_event.is_set():
-        clear()
-
-        with lock:
-            #lx: {state.sticks['lx']:.2f} lx: {state.sticks['ly']:.2f}
-            #rx: {state.sticks['rx']:.2f} rx: {state.sticks['ry']:.2f}
-            clean = {
-                cid: {
-                    "sticks": data.get("sticks"),
-                    "buttons": data.get("buttons"),
-                    "timestamp": data.get("timestamp"),
-                    "dpad": data.get("dpad"),
-                    "triggers": data.get("triggers"),
-                }
-                for cid, data in state.inputs.items()
-            }
-
-            print(f"""
-INPUT
-inputs: {json.dumps(clean, indent=2)}
-
-MOTORS
-left: {state.motors['left']:.2f}
-right: {state.motors['right']:.2f}
-
-RAW SRC:
-
-
-TELEMETRY:
-motor_output: {state.telemetry["motor_output"]}
-""")
-
+        display_live(state, lock)
         time.sleep(refresh_rate)
-
 
 # -------------------------------
 def main():
     state = State()
     stop_event = threading.Event()
-    
     lock = threading.Lock()
 
     threads = [
         threading.Thread(target=usb_input_thread, args=(state, lock, stop_event)),
         threading.Thread(target=control_thread, args=(state, lock, stop_event)),
         threading.Thread(target=motor_thread, args=(state, lock, stop_event)),
-        threading.Thread(target=display_live, args=(state, lock, stop_event))
+        threading.Thread(target=display_thread, args=(state, lock, stop_event))
     ]
     
     for t in threads:
