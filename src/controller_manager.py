@@ -37,7 +37,7 @@ class ControllerManager():
 
             if kind == "dualshock":
                 return DualShockController(dev, transport)
-            if kind == "dualsense":
+            elif kind == "dualsense":
                 controller = DualSenseController(dev, transport)
                 controller.id = f"{vid}:{pid}"
                 return controller
@@ -50,3 +50,10 @@ class ControllerManager():
             if controller:
                 self.controllers.append(controller)
         return self.controllers
+    
+def update_controller_state(state, lock, controllers):
+    for controller in controllers:
+        data = controller.read()
+        if data:
+            with lock:
+                state.inputs[controller.id] = data
