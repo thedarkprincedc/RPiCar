@@ -13,6 +13,9 @@ XBOX_PIDS = {
     0x0B13,  # Series X controller (example)
 }
 
+def is_bluetooth(device):
+    return device.get("bus_type") == hid.BusType.BLUETOOTH
+
 class ControllerManager():
     def __init__(self):
         self.controllers = []
@@ -34,9 +37,19 @@ class ControllerManager():
             if kind == "dualshock":
                 return DualShockController(dev)
             if kind == "dualsense":
-                controller = DualSenseController(dev)
+                transport = "bluetooth" if is_bluetooth(device) == True else "usb"
+                controller = DualSenseController(dev, transport)
                 controller.id = f"{vid}:{pid}"
-                return controller 
+                return controller
+            
+                # if(is_bluetooth(device)):
+                #     controller = DualSenseController(dev, "bluetooth")
+                #     controller.id = f"{vid}:{pid}"
+                #     return controller
+                # else:
+                #     controller = DualSenseController(dev)
+                #     controller.id = f"{vid}:{pid}"
+                #     return controller
         return None
 
     def scan(self):

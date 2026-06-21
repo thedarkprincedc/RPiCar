@@ -5,21 +5,22 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def display_live(state, lock):
-        clear()
+    clear()
 
-        with lock:
-            clean = {
-                cid: {
-                    "sticks": data.get("sticks"),
-                    "buttons": data.get("buttons"),
-                    "timestamp": data.get("timestamp"),
-                    "dpad": data.get("dpad"),
-                    "triggers": data.get("triggers"),
-                }
-                for cid, data in state.inputs.items()
+    with lock:
+        clean = {
+            cid: {
+                "sticks": data.get("sticks"),
+                "buttons": data.get("buttons"),
+                "dpad": data.get("dpad"),
+                "triggers": data.get("triggers"),
+                "source": data.get("source"),
+                "timestamp": data.get("timestamp"),
             }
+            for cid, data in state.inputs.items()
+        }
 
-            print(f"""
+        print(f"""
 INPUT
 inputs: {json.dumps(clean, indent=2)}
 

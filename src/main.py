@@ -28,16 +28,16 @@ def translate_controller_tank_drive_data(state, lock):
 # refresh_rate = 0.02 # 20ms
 # refresh_rate = 0.05 # 50ms
 
-def usb_input_thread(state, lock, stop_event, refresh_rate = 0.02):
-    controllerManager = ControllerManager()
-    controllers = controllerManager.scan()
+def update_controller_state(state, lock, controllers):
+    for controller in controllers:
+        data = controller.read()
+        if data:
+            with lock:
+                state.inputs[controller.id] = data
 
+def usb_input_thread(state, lock, stop_event, controllers, refresh_rate = 0.02):
     while not stop_event.is_set():
-        for controller in controllers:
-            data = controller.read()
-            if data:
-                with lock:
-                    state.inputs[controller.id] = data
+        update_controller_state(state, lock, controllers)
         time.sleep(refresh_rate)
 
 def control_thread(state, lock, stop_event, refresh_rate = 0.02):
@@ -45,13 +45,12 @@ def control_thread(state, lock, stop_event, refresh_rate = 0.02):
         translate_controller_tank_drive_data(state, lock)
         time.sleep(refresh_rate)
 
-def motor_thread(state, lock, stop_event, refresh_rate = 0.02):
-    driver = get_motor_driver(state, lock)
+def motor_thread(state, lock, stop_event, driver, refresh_rate = 0.02):
     while not stop_event.is_set():
         motor_control_data(state, lock, driver)
         time.sleep(refresh_rate)
 
-def display_thread(state, lock, stop_event, refresh_rate = 0.05):
+def display_thread(state, lock, stop_event, refresh_rate = 0.04):
     while not stop_event.is_set():
         display_live(state, lock)
         time.sleep(refresh_rate)
@@ -62,10 +61,15 @@ def main():
     stop_event = threading.Event()
     lock = threading.Lock()
 
+    controllerManager = ControllerManager()
+    controllers = controllerManager.scan()
+
+    driver = get_motor_driver(state, lock)
+
     threads = [
-        threading.Thread(target=usb_input_thread, args=(state, lock, stop_event)),
+        threading.Thread(target=usb_input_thread, args=(state, lock, stop_event, controllers)),
         threading.Thread(target=control_thread, args=(state, lock, stop_event)),
-        threading.Thread(target=motor_thread, args=(state, lock, stop_event)),
+        threading.Thread(target=motor_thread, args=(state, lock, stop_event, driver)),
         threading.Thread(target=display_thread, args=(state, lock, stop_event))
     ]
     
