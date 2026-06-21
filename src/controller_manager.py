@@ -8,6 +8,7 @@ PS_PIDS = {
     0x0CE6: "dualsense",
     0x0DF2: "dualsense"
 }
+
 XBOX_PIDS = {
     0x02E0,  # Xbox One S Controller (example)
     0x0B13,  # Series X controller (example)
