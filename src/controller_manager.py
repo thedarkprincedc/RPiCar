@@ -23,11 +23,12 @@ class ControllerManager():
     def create_controller(self, device):
         vid = device["vendor_id"]
         pid = device["product_id"]
-        name = (device.get("product_string") or "").lower()
+        #name = (device.get("product_string") or "").lower()
+        transport = "bluetooth" if is_bluetooth(device) == True else "usb"
 
         # Xbox (Microsoft VID)
         if vid == 0x045E and pid in XBOX_PIDS:
-            return XboxController(device)
+            return XboxController(device, transport)
         
         # PlayStation (Sony VID)
         if vid == 0x054C and pid in PS_PIDS:
@@ -35,30 +36,17 @@ class ControllerManager():
             kind = PS_PIDS.get(pid)
 
             if kind == "dualshock":
-                return DualShockController(dev)
+                return DualShockController(dev, transport)
             if kind == "dualsense":
-                transport = "bluetooth" if is_bluetooth(device) == True else "usb"
                 controller = DualSenseController(dev, transport)
                 controller.id = f"{vid}:{pid}"
                 return controller
-            
-                # if(is_bluetooth(device)):
-                #     controller = DualSenseController(dev, "bluetooth")
-                #     controller.id = f"{vid}:{pid}"
-                #     return controller
-                # else:
-                #     controller = DualSenseController(dev)
-                #     controller.id = f"{vid}:{pid}"
-                #     return controller
         return None
 
     def scan(self):
         devices = hid.enumerate()
-
         for d in devices:
             controller = self.create_controller(d)
             if controller:
                 self.controllers.append(controller)
-        
         return self.controllers
-
