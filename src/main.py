@@ -10,7 +10,8 @@ from motor_controller import get_motor_driver, motor_control_data
 def translate_controller_tank_drive_data(state, lock):
     with lock:
         if(state.inputs):
-            input = state.inputs["1356:3302"]
+            # sets the input state to the first controller
+            input = state.inputs[state.selected_ctrl_id]
            
             lx = input["sticks"]["lx"]
             ly = input["sticks"]["ly"]
@@ -63,13 +64,14 @@ def main():
 
     controllerManager = ControllerManager()
     controllers = controllerManager.scan()
-
+    state.selected_ctrl_id = controllerManager.get_firstcontroller()
+    
     driver = get_motor_driver(state, lock)
 
     #kbd = KeyboardController()
 
     threads = [
-        #threading.Thread(target=keyboard_input_thread, args=(state, lock, stop_event, kbd)),
+       # threading.Thread(target=keyboard_input_thread, args=(state, lock, stop_event, kbd)),
         threading.Thread(target=usb_input_thread, args=(state, lock, stop_event, controllers)),
         threading.Thread(target=control_thread, args=(state, lock, stop_event)),
         threading.Thread(target=motor_thread, args=(state, lock, stop_event, driver)),

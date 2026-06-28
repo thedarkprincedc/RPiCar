@@ -6,4 +6,4 @@ class BaseController:
         raise NotImplementedError
     def parse(self):
         raise NotImplementedError
-    
+
