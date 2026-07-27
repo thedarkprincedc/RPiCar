@@ -27,10 +27,16 @@ Supports PS5 DualSense controllers (USB + Bluetooth).
 
 ### Setup
 
-Create virtual environment:
+Create virtual environment: (osx/linux)
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Create virtual environment: (windows)
+```bash
+python3 -m venv .venv
+source .venv/Scripts/activate
 ```
 
 Install Dependencies
@@ -41,4 +47,37 @@ pip install -r requirements.txt
 Run Application
 ```bash
 python src/main.py
+```
+
+PORT = "/dev/serial0"
+
+```
+python -m venv venv
+source .venv/Scripts/activate
+pip install -r requirements-dev.txt
+```
+
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+
+
+Generate SSH Key
+```bash 
+ssh-keygen -t ed25519 -C "your_email@example.com"
+ssh-keygen -t ed25519 -f ~/.ssh/rpi_key -C "Raspberry Pi"
+
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_rpicar -C "RPiCar SSH key"
+```
+
+Copy Public SSH Key to Server for Login
+```bash
+ssh-copy-id admin@<pi-ip-address>
+ssh-copy-id -i ~/.ssh/id_ed25519_rpicar.pub admin@<pi-ip-address>
+```
+
+Use SSH Key to Server for Login
+```bash
+ssh admin@<pi-ip-address>
+ssh -i ~/.ssh/my_key admin@<pi-ip-address>
 ```

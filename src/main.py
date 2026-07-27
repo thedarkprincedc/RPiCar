@@ -2,7 +2,7 @@ import time
 import threading
 from state import State
 from controller_manager import ControllerManager, update_controller_state
-from inputs.keyboard_controller import KeyboardController, update_keyboard_state
+#from inputs.keyboard_controller import KeyboardController, update_keyboard_state
 from display_live import display_live
 from motor_controller import get_motor_driver, motor_control_data
 
@@ -31,10 +31,10 @@ def translate_controller_tank_drive_data(state, lock):
 # refresh_rate = 0.02 # 20ms
 # refresh_rate = 0.05 # 50ms
 
-def keyboard_input_thread(state, lock, stop_event, keyboard, refresh_rate = 0.02):
-    while not stop_event.is_set():
-        update_keyboard_state(state, lock, keyboard)
-        time.sleep(refresh_rate)
+# def keyboard_input_thread(state, lock, stop_event, keyboard, refresh_rate = 0.02):
+#     while not stop_event.is_set():
+#         update_keyboard_state(state, lock, keyboard)
+#         time.sleep(refresh_rate)
 
 def usb_input_thread(state, lock, stop_event, controllers, refresh_rate = 0.02):
     while not stop_event.is_set():
