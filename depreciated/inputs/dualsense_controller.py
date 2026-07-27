@@ -1,4 +1,7 @@
-class DualSenseController():
+from inputs.base_controller import BaseController
+import time
+
+class DualSenseController(BaseController):
     def __init__(self, device, transport="usb"):
         self.device = device
         self.transport = transport
@@ -9,21 +12,19 @@ class DualSenseController():
         diff = value - self.center
 
         if (abs(diff) < self.dead_zone):
-            return 0.0;  # inside dead zone -> zero
+            return 0;  # inside dead zone -> zero
 
         # Normalize to -1 to 1 range outside dead zone
         if(diff > 0):
             return (diff - self.dead_zone) / (127 - self.dead_zone)
         else:
-            return (diff + self.dead_zone) / (128 - self.dead_zone)
+            return (diff + self.dead_zone) / (127 - self.dead_zone)
     
     def read(self):
-        data = self.device.read(78, timeout=5)
-        #data = self.device.read(64, timeout=5)
+        data = self.device.read(64)
         if not data:
             return None
         
-        #return self.parse_usb(data)
         if self.transport == "usb":
             return self.parse_usb(data)
         else:
@@ -41,9 +42,9 @@ class DualSenseController():
                 "left":  dpad in (5, 6, 7),
             },
             "sticks": {
-                "lx": self.applyDeadZone(data[2] & 0xFF),
-                "ly": self.applyDeadZone(data[3]),
-                "rx": self.applyDeadZone(data[4]),
+                "lx": self.applyDeadZone(data[1]),
+                "ly": self.applyDeadZone(data[2]),
+                "rx": self.applyDeadZone(data[3]),
                 "ry": self.applyDeadZone(data[4]),
             },
             "buttons": {
@@ -75,6 +76,10 @@ class DualSenseController():
                 "l2_pct": round(l2_analog / 255.0, 2),
                 "r2_pct": round(r2_analog / 255.0, 2),
             },
+
+            "source": self.transport,
+            "raw_data": data,
+            "timestamp": time.time()
         }
     
     def parse_usb(self, data):
@@ -122,5 +127,13 @@ class DualSenseController():
                 # Optional: Normalized percentage value (0.0 to 1.0)
                 "l2_pct": round(l2_analog / 255.0, 2),
                 "r2_pct": round(r2_analog / 255.0, 2),
+
             },
+            # "raw": {
+            #     "source": "usb",
+            #     "data": data
+            # },
+            "source": self.transport,
+            "raw_data": data,
+            "timestamp": time.time()
         }

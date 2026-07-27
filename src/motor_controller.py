@@ -1,29 +1,30 @@
-import platform
-from drivers.motor_pi_driver import RPiMotorDriver
-from drivers.motor_mock_driver import MockMotorDriver
+class MotorController():
+    def __init__(self):
+        self.left = 0
+        self.right = 0
 
-def to_pwm(x):
-    return int(min(1.0, abs(x)) * 255)
+    def apply_deadzone(self, value, deadzone=0.1):
+        if abs(value) < deadzone:
+            return 0
+        return value
 
-def get_motor_driver(state, lock):
-    if platform.system() == "Linux":
-        try:
-            return RPiMotorDriver()
-        except ImportError:
-            return MockMotorDriver(state, lock)
-    else:
-        print("running pc motor driver")
-        return MockMotorDriver(state, lock)
-    
-def motor_control_data(state, lock, driver):
-    with lock:
-        left = state.motors["left"]
-        right = state.motors["right"]
+    def controller_to_motors(self, controller):
+        # DualSense sticks
+        forward = -controller["sticks"]["ly"]  # invert because up is negative
+        turn = controller["sticks"]["lx"]
 
-    # convert to hardware format
-    left_dir = 1 if left >= 0 else -1
-    right_dir = 1 if right >= 0 else -1
+        forward = self.apply_deadzone(forward)
+        turn = self.apply_deadzone(turn)
 
-    left_pwm = to_pwm(left)
-    right_pwm = to_pwm(right)
-    driver.set_motor(left_dir, left_pwm, right_dir, right_pwm)
+        # Tank drive mixing
+        left = forward + turn
+        right = forward - turn
+
+        # Clamp to -1.0 -> 1.0
+        left = max(-1, min(1, left))
+        right = max(-1, min(1, right))
+
+        return {
+            "left": left,
+            "right": right
+        }
