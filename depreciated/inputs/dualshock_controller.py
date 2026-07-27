@@ -1,3 +1,6 @@
+from inputs.base_controller import BaseController
+import time
+
 PS4_D_PAD_MAP = {
     8: 'neutral',
     0: 'up',
@@ -10,17 +13,13 @@ PS4_D_PAD_MAP = {
     7: 'upLeft'
 }
 
-class DualShockController():
+class DualShockController(BaseController):
     def __init__(self, device, transport="usb"):
         self.device = device
         self.transport = transport
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
-        self.parse_method = {
-            "bluetooth": self.parse_bluetooth,
-            "usb": self.parse_usb
-        }
-
+        
     def applyDeadZone(self, value):
         diff = value - self.center
 
@@ -34,20 +33,13 @@ class DualShockController():
             return (diff + self.dead_zone) / (127 - self.dead_zone)
         
     def read(self):
-        data = self.device.read(64, timeout=5)
+        data = self.device.read(64)
         if not data:
             return None
-        
-        if self.parse_method[self.transport]:
-            self.parse_method[self.transport](data)
-
-    def parse_bluetooth(self, data):
-        return self.parse(data)
-    
-    def parse_usb(self, data):
         return self.parse(data)
 
     def parse(self, data):
+        dpad = data[5] & 0x0F
         return {
             "dpad": {
                 "direction" : PS4_D_PAD_MAP[dpad]
@@ -80,4 +72,7 @@ class DualShockController():
                 "l2": data[8], 
                 "r2": data[9]
             },
+            "source": self.transport,
+            "raw_data": data,
+            "timestamp": time.time()
         }

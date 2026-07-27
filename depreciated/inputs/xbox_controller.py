@@ -1,24 +1,15 @@
-class XBOXController():
+from inputs.base_controller import BaseController
+import time
+
+class XboxController(BaseController):
     def __init__(self, device, transport="usb"):
         self.device = device
         self.transport = transport
-        self.parse_method = {
-            "bluetooth": self.parse_bluetooth,
-            "usb": self.parse_usb
-        }
-
+        
     def read(self):
-        data = self.device.read(64, timeout=5)
+        data = self.device.read(64)
         if not data:
             return None
-        
-        if self.parse_method[self.transport]:
-            self.parse_method[self.transport](data)
-
-    def parse_bluetooth(self, data):
-        return self.parse(data)
-    
-    def parse_usb(self, data):
         return self.parse(data)
 
     def parse(self, data):
@@ -54,4 +45,7 @@ class XBOXController():
                 "lt": int.from_bytes(data[9:11], 'little'),
                 "rt": int.from_bytes(data[11:13], 'little')
             },
+            "source": self.transport,
+            "raw_data": data,
+            "timestamp": time.time()
         }

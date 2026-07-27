@@ -1,12 +1,12 @@
 class State:
     def __init__(self):
         #input state
-        self.inputs = {}
+        self.inputs = [None]
         
         # output state
         self.motors = {
-            "left": 0,
-            "right": 0,
+            "left": 0.0,
+            "right": 0.0,
         }
 
         # debug/raw state (optional)

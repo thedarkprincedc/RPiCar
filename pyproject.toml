@@ -1,0 +1,5 @@
+[tool.poe.tasks]
+dev = "source .venv/Scripts/activate"
+run = "python src/main.py"
+sync = "./sync.sh"
+watch = "watchfiles 'poe sync' src"
