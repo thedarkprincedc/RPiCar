@@ -5,10 +5,8 @@ from inputs.controller_manager import ControllerManager
 from real_serial_driver import RealSerialDriver
 from motor_controller import MotorController
 from display_live import DisplayLive
-import json
 
 def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
-    print("usb_input_thread")
     ctrlManager = ControllerManager()
     ctrlManager.scan()
 
@@ -27,10 +25,10 @@ def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
                 ctrl = state.inputs[0]
 
         if ctrl:
-            #print(json.dumps(state.inputs, indent=2))
             motors = motor_controller.controller_to_motors(ctrl)     
             command = f'{{"T":1,"L":{motors["left"]},"R":{motors["right"]}}}\n'
             serial_driver.write(command.encode())
+
         time.sleep(refresh_rate)
     serial_driver.close()
 

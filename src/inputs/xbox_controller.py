@@ -1,19 +1,25 @@
-class XBOXController():
+class XboxController():
     def __init__(self, device, transport="usb"):
         self.device = device
         self.transport = transport
-        self.parse_method = {
+        self.parsers = {
             "bluetooth": self.parse_bluetooth,
             "usb": self.parse_usb
         }
+        self.report_sizes = {
+            "bluetooth": 64,
+            "usb": 64
+        }
 
     def read(self):
-        data = self.device.read(64, timeout=5)
+        size = self.report_sizes[self.transport]
+        data = self.device.read(size, timeout=5)
+
         if not data:
             return None
         
-        if self.parse_method[self.transport]:
-            self.parse_method[self.transport](data)
+        if self.parsers[self.transport]:
+            self.parsers[self.transport](data)
 
     def parse_bluetooth(self, data):
         return self.parse(data)
