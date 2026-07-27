@@ -1,5 +1,5 @@
-from src.serial_driver import SerialDriver
 import serial
+from serial_driver import SerialDriver
 
 class RealSerialDriver(SerialDriver):
     def __init__(self, port="/dev/serial0", baud=115200):

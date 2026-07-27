@@ -1,10 +1,20 @@
 import time
 import threading
 from state import State
-from src.controller_manager import ControllerManager
-from src.real_serial_driver import RealSerialDriver
-from src.motor_controller import MotorController
-from src.display_live import DisplayLive
+from inputs.controller_manager import ControllerManager
+from real_serial_driver import RealSerialDriver
+from motor_controller import MotorController
+from display_live import DisplayLive
+import json
+
+def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
+    print("usb_input_thread")
+    ctrlManager = ControllerManager()
+    ctrlManager.scan()
+
+    while not stop_event.is_set():
+        ctrlManager.update_controller_state(state, lock)
+        #time.sleep(refresh_rate)
 
 def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
     serial_driver = RealSerialDriver("/dev/serial0", 115200)
@@ -23,14 +33,6 @@ def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
             serial_driver.write(command.encode())
         time.sleep(refresh_rate)
     serial_driver.close()
-
-def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
-    ctrlManager = ControllerManager()
-    ctrlManager.scan()
-
-    while not stop_event.is_set():
-        ctrlManager.update_controller_state(state, lock)
-        #time.sleep(refresh_rate)
 
 def display_thread(state, lock, stop_event, refresh_rate = 0.04):
     display = DisplayLive()

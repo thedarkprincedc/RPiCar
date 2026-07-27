@@ -4,6 +4,15 @@ class DualSenseController():
         self.transport = transport
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
+        self.parsers = {
+            "bluetooth": self.parse_bluetooth,
+            "usb": self.parse_usb
+        }
+        self.report_sizes = {
+            "bluetooth": 78,
+            "usb": 64
+        }
+
 
     def applyDeadZone(self, value):
         diff = value - self.center
@@ -18,16 +27,13 @@ class DualSenseController():
             return (diff + self.dead_zone) / (128 - self.dead_zone)
     
     def read(self):
-        data = self.device.read(78, timeout=5)
-        #data = self.device.read(64, timeout=5)
+        size = self.report_sizes[self.transport]
+        data = self.device.read(size, timeout=5)
+       
         if not data:
             return None
         
-        #return self.parse_usb(data)
-        if self.transport == "usb":
-            return self.parse_usb(data)
-        else:
-            return self.parse_bluetooth(data)
+        return self.parsers[self.transport](data)
 
     def parse_bluetooth(self, data):
         dpad = data[5] & 0x0F

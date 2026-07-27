@@ -1,5 +1,5 @@
 import hid
-from src.dualsense_controller import DualSenseController
+from inputs.dualsense_controller import DualSenseController
 
 PS_PIDS = {
     0x09FC: "dualshock",
@@ -46,6 +46,7 @@ class ControllerManager:
            dev = hid.Device(vid, pid)
            kind = PS_PIDS.get(pid)
            if kind == "dualsense":
+                print("Found DualSenseController")
                 return DualSenseController(dev, transport)
         return None
 
