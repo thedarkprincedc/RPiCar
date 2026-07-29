@@ -5,15 +5,14 @@ source .env
 
 echo "Deploying to $HOST_IP_OR_NAME..."
 
-scp -r * admin@magaman:/home/admin/RPiCar
-scp -r * admin@10.1.20.235:/home/admin/RPiCar
-
-
+#scp -r * admin@magaman:/home/admin/RPiCar
+#scp -r * admin@10.1.20.235:/home/admin/RPiCar
 
 rsync -av --delete \
   --exclude '__pycache__/' \
   --exclude '*.pyc' \
   --exclude '.venv/' \
+  --exclude 'venv/' \
   --exclude '.git/' \
   ./ admin@magaman:/home/admin/RPiCar/
 

@@ -2,6 +2,16 @@ import hid
 from inputs.dualsense_controller import DualSenseController
 from inputs.dualshock_controller import DualShockController
 from inputs.xbox_controller import XboxController
+import logging
+
+logger = logging.getLogger(__name__)
+
+CONTROLLERS = {
+    (0x054C, 0x0CE6): DualSenseController,
+    (0x054C, 0x09CC): DualShockController,
+    (0x045E, 0x0B13): XboxController,
+    # Add more controllers here
+}
 
 PS_PIDS = {
     0x09FC: "dualshock",
@@ -26,11 +36,13 @@ class ControllerManager:
         self.controllers = []
 
     def scan(self):
+        logger.info("Scanning controllers")
         devices = hid.enumerate()
         for d in devices:
             controller = self.create_controller(d)
             if controller:
                 self.controllers.append(controller)
+                logger.info("Connected %s", controller.__class__.__name__)
         return self.controllers
     
     def is_bluetooth(self, device):
@@ -48,7 +60,6 @@ class ControllerManager:
             dev = hid.Device(vid, pid)
             kind = PS_PIDS.get(pid)
             if kind == "dualsense":
-                print("Found DualSenseController")
                 return DualSenseController(dev, transport)
             elif kind == "dualshock":
                 return DualShockController(dev, transport)

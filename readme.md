@@ -61,8 +61,9 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt
 
-
-Generate SSH Key
+### Secure Shell Access
+---
+#### Generate SSH Key
 ```bash 
 ssh-keygen -t ed25519 -C "your_email@example.com"
 ssh-keygen -t ed25519 -f ~/.ssh/rpi_key -C "Raspberry Pi"
@@ -70,14 +71,43 @@ ssh-keygen -t ed25519 -f ~/.ssh/rpi_key -C "Raspberry Pi"
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_rpicar -C "RPiCar SSH key"
 ```
 
-Copy Public SSH Key to Server for Login
+#### Copy Public SSH Key to Server for Login
 ```bash
 ssh-copy-id admin@<pi-ip-address>
 ssh-copy-id -i ~/.ssh/id_ed25519_rpicar.pub admin@<pi-ip-address>
 ```
 
-Use SSH Key to Server for Login
+#### Use SSH Key to Server for Login
 ```bash
 ssh admin@<pi-ip-address>
 ssh -i ~/.ssh/my_key admin@<pi-ip-address>
+```
+
+### Setup Service
+---
+#### Start Service
+
+```bash
+sudo cp rpicar.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable rpicar
+sudo systemctl start rpicar
+```
+
+#### Stop Service
+
+```bash
+sudo systemctl stop rpicar
+```
+
+#### Restart Service
+
+```bash
+sudo systemctl restart rpicar
+```
+
+#### Disable Service
+
+```bash
+sudo systemctl disable rpicar
 ```
