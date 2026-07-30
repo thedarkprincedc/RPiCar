@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Installing RPiCar Service"
+echo "Starting RPiCar Service"
 
 sudo cp deploy/rpicar.service /etc/systemd/system/
 
