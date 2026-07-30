@@ -1,6 +1,5 @@
 ## RPiCar
-Remote control car software for Raspberry Pi using an L298N H-Bridge motor driver.  
-
+Remote control car software for Raspberry Pi using an Waveshare Rover chasis.  
 
 ### Features
 - Supports PS5 DualSense controllers (USB + Bluetooth).
@@ -12,9 +11,7 @@ Remote control car software for Raspberry Pi using an L298N H-Bridge motor drive
 
 ### Hardware
 - Raspberry Pi (3/4/5)
-- L298N H-Bridge motor driver
-- DC motors + chassis
-- Power supply (separate motor power recommended)
+- Waveshare Rover Chasis
 
 ### Requirements
 - Python 3.9+
