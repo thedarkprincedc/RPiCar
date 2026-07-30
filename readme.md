@@ -1,5 +1,5 @@
 ## RPiCar
-Remote control car software for Raspberry Pi using an Waveshare Rover chasis.  
+Remote control car software for Raspberry Pi using an waveshare rover chasis.  
 
 ### Features
 - Supports PS5 DualSense controllers (USB + Bluetooth).
@@ -22,6 +22,7 @@ Remote control car software for Raspberry Pi using an Waveshare Rover chasis.
 1. [SystemCtrl](docs/systemctl.md)
 2. [Secure Shell (ssh)](docs/ssh.md)
 3. [Virtual Environments](docs/venv.md)
+4. [Waveshare Rover](https://www.waveshare.com/wiki/WAVE_ROVER#Driver_Board_General_Driver_for_Robots_Module_Usage_Tutorial)
 
 ---
 
