@@ -1,9 +1,7 @@
 #!bin/bash
 set -e
 
-source .env
-
-echo "Deploying to $RPI_HOST..."
+echo "Sync to $RPI_HOST..."
 
 #scp -r * $RPI_USER@$RPI_HOST:$PROJECT_DIR
 #scp -r * $RPI_USER@10.1.20.235:$PROJECT_DIR
