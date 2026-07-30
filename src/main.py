@@ -17,10 +17,8 @@ logger = logging.getLogger(__name__)
 def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
     ctrlManager = ControllerManager()
     ctrlManager.scan()
-
     while not stop_event.is_set():
         ctrlManager.update_controller_state(state, lock)
-        #time.sleep(refresh_rate)
 
 def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
     serial_driver = RealSerialDriver("/dev/serial0", 115200)
@@ -40,14 +38,17 @@ def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
         time.sleep(refresh_rate)
     serial_driver.close()
 
-def display_thread(state, lock, stop_event, refresh_rate = 0.04):
-    display = DisplayLive()
-    while not stop_event.is_set():
-        display.display_live(state, lock)
-        time.sleep(refresh_rate)
+# def display_thread(state, lock, stop_event, refresh_rate = 0.04):
+#     display = DisplayLive()
+#     while not stop_event.is_set():
+#         display.display_live(state, lock)
+#         time.sleep(refresh_rate)
 
-def webserver_thread(state, lock, stop_event, refresh_rate = 0.04):
-    WebServer(state).run()
+def telemetry_thread(state, lock, stop_event, refresh_rate = 0.04):
+    return
+
+def camera_thread(state, lock, stop_event, refresh_rate = 0.04):
+    return
 
 
 def main():
@@ -65,29 +66,23 @@ def main():
             target=serial_thread, 
             args=(state, lock, stop_event)
         ),
-        #threading.Thread(target=display_thread, args=(state, lock, stop_event))
-        # threading.Thread(
-        #     name="Web Server",
-        #     target=webserver_thread, 
-        #     args=(state, lock, stop_event), 
-        #     daemon=True
-        # )
+        threading.Thread(
+            target=telemetry_thread, 
+            args=(state, lock, stop_event)
+        ),
+        threading.Thread(
+            target=camera_thread, 
+            args=(state, lock, stop_event)
+        )
     ]
    
     for t in threads:
         t.start()
 
-    # def shutdown(signum, frame):
-    #     logger.info("Shutdown requested")
-    #     stop_event.set()
-
-    # signal.signal(signal.SIGINT, shutdown)
-    # signal.signal(signal.SIGTERM, shutdown)
-
     try:
-        WebServer(state).run()
-        #while True:
-        #    time.sleep(1)
+        #WebServer(state).run()
+        while True:
+            time.sleep(1)
 
     except KeyboardInterrupt:
         logger.info("Shutting down...")
@@ -97,9 +92,7 @@ def main():
             if not t.daemon:
                 t.join(timeout=10)
 
-        logger.info("Shutdown complete.")
-
-    
+        logger.info("Shutdown Complete...")
 
 if __name__ == "__main__":
     main()

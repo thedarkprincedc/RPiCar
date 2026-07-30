@@ -70,8 +70,8 @@ class DualSenseController():
                 "r3": bool(data[6] & 0x0080),
 
                 # Byte 10: Center-Console Specialty Buttons
-                "touchpad": bool(data[7] & 0x02),
                 "ps": bool(data[7] & 0x01),
+                "touchpad": bool(data[7] & 0x02)
                 #"mute": bool(data[8] & 0x04),
             },
             "triggers": {
@@ -118,8 +118,8 @@ class DualSenseController():
                 "r3": bool(data[9] & 0x0080),
 
                 # Byte 10: Center-Console Specialty Buttons
-                "touchpad": bool(data[10] & 0x02),
                 "ps": bool(data[10] & 0x01),
+                "touchpad": bool(data[10] & 0x02),
                 "mute": bool(data[10] & 0x04),
             },
             "triggers": {
