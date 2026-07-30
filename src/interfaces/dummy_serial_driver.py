@@ -1,4 +1,4 @@
-from serial_driver import SerialDriver
+from interfaces.serial_driver import SerialDriver
 
 class DummySerialDriver(SerialDriver):
     def __init__(self):

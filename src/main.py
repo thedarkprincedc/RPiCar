@@ -2,13 +2,19 @@ import time
 import threading
 from state import State
 from inputs.controller_manager import ControllerManager
-from real_serial_driver import RealSerialDriver
-from motor_controller import MotorController
+from drive.motor_controller import MotorController
+from interfaces.real_serial_driver import RealSerialDriver
+from web_server import WebServer
 from display_live import DisplayLive
-import json
+import logging
+from logging_config import setup_logging
+import signal
+
+setup_logging()
+
+logger = logging.getLogger(__name__)
 
 def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
-    print("usb_input_thread")
     ctrlManager = ControllerManager()
     ctrlManager.scan()
 
@@ -27,10 +33,10 @@ def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
                 ctrl = state.inputs[0]
 
         if ctrl:
-            #print(json.dumps(state.inputs, indent=2))
             motors = motor_controller.controller_to_motors(ctrl)     
             command = f'{{"T":1,"L":{motors["left"]},"R":{motors["right"]}}}\n'
             serial_driver.write(command.encode())
+
         time.sleep(refresh_rate)
     serial_driver.close()
 
@@ -40,29 +46,60 @@ def display_thread(state, lock, stop_event, refresh_rate = 0.04):
         display.display_live(state, lock)
         time.sleep(refresh_rate)
 
+def webserver_thread(state, lock, stop_event, refresh_rate = 0.04):
+    WebServer(state).run()
+
+
 def main():
+    logger.info("Starting RPiCar...")
     state = State()
     stop_event = threading.Event()
     lock = threading.Lock()
 
     threads = [
-        threading.Thread(target=usb_input_thread, args=(state, lock, stop_event)),
-        threading.Thread(target=serial_thread, args=(state, lock, stop_event)),
+        threading.Thread(
+            target=usb_input_thread, 
+            args=(state, lock, stop_event)
+        ),
+        threading.Thread(
+            target=serial_thread, 
+            args=(state, lock, stop_event)
+        ),
         #threading.Thread(target=display_thread, args=(state, lock, stop_event))
+        # threading.Thread(
+        #     name="Web Server",
+        #     target=webserver_thread, 
+        #     args=(state, lock, stop_event), 
+        #     daemon=True
+        # )
     ]
-    
+   
     for t in threads:
         t.start()
 
+    # def shutdown(signum, frame):
+    #     logger.info("Shutdown requested")
+    #     stop_event.set()
+
+    # signal.signal(signal.SIGINT, shutdown)
+    # signal.signal(signal.SIGTERM, shutdown)
+
     try:
-        while True:
-            time.sleep(1)
+        WebServer(state).run()
+        #while True:
+        #    time.sleep(1)
 
     except KeyboardInterrupt:
-        print("Shutting down...")
+        logger.info("Shutting down...")
         stop_event.set()
+
         for t in threads:
-            t.join()
+            if not t.daemon:
+                t.join(timeout=10)
+
+        logger.info("Shutdown complete.")
+
+    
 
 if __name__ == "__main__":
     main()
