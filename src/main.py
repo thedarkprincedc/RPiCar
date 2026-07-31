@@ -45,10 +45,12 @@ def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
 #         time.sleep(refresh_rate)
 
 def telemetry_thread(state, lock, stop_event, refresh_rate = 0.04):
-    return
+    while not stop_event.is_set():
+        time.sleep(refresh_rate)
 
 def camera_thread(state, lock, stop_event, refresh_rate = 0.04):
-    return
+    while not stop_event.is_set():            
+        time.sleep(refresh_rate)
 
 
 def main():
@@ -90,7 +92,7 @@ def main():
 
         for t in threads:
             if not t.daemon:
-                t.join(timeout=10)
+                t.join(timeout=2)
 
         logger.info("Shutdown Complete...")
 

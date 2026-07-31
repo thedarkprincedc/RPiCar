@@ -64,6 +64,8 @@ class DualSenseController():
                 "r1": bool(data[6] & 0x02),
                 "l2": bool(data[6] & 0x04),
                 "r2": bool(data[6] & 0x08),
+
+                #
                 "options": bool(data[6] & 0x0010),
                 "create": bool(data[6] & 0x0020), # Share button
                 "l3": bool(data[6] & 0x0040),
@@ -112,6 +114,8 @@ class DualSenseController():
                 "r1": bool(data[9] & 0x02),
                 "l2": bool(data[9] & 0x04),
                 "r2": bool(data[9] & 0x08),
+
+                #
                 "options": bool(data[9] & 0x0010),
                 "create": bool(data[9] & 0x0020), # Share button
                 "l3": bool(data[9] & 0x0040),
