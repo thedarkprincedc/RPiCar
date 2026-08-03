@@ -1,5 +1,9 @@
-class DualSenseController():
-    def __init__(self, device, transport="usb"):
+from inputs.base_controller import BaseController
+import copy
+
+class DualSenseController(BaseController):
+    def __init__(self, device, transport = "usb"):
+        super().__init__()
         self.device = device
         self.transport = transport
         self.dead_zone = 10     # tune this (usually 5-15)
@@ -12,8 +16,95 @@ class DualSenseController():
             "bluetooth": 78,
             "usb": 64
         }
+        self._state = {
+            "dpad": {
+                "up":    False,
+                "right": False,
+                "down":  False,
+                "left":  False,
+            },
+            "sticks": {
+                "lx": 0,
+                "ly": 0,
+                "rx": 0,
+                "ry": 0,
+            },
+            "buttons": {
+                # Byte 8: Action Buttons & D-Pad
+                "square": False,
+                "cross": False,
+                "circle": False,
+                "triangle": False,
 
+                # Byte 9: Triggers, Shoulders, and System Menus
+                "l1": False,
+                "r1": False,
+                "l2": False,
+                "r2": False,
 
+                #
+                "options": False,
+                "create": False, # Share button
+                "l3": False,
+                "r3": False,
+
+                # Byte 10: Center-Console Specialty Buttons
+                "ps": False,
+                "touchpad": False
+                #"mute": bool(data[8] & 0x04),
+            },
+            "triggers": {
+                "l2_raw": 0,
+                "r2_raw": 0,
+                # Optional: Normalized percentage value (0.0 to 1.0)
+                "l2_pct": 0,
+                "r2_pct": 0,
+            },
+        }
+
+    def get_transport(self, hid, device):
+        return "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+
+    @classmethod
+    def scan(cls):
+        controllers = []
+
+        try:
+            import hid
+        except ImportError:
+            print("hid library not available")
+            return controllers
+
+        for device in hid.enumerate():
+
+            product = device.get("product_string", "")
+
+            if "DualSense" in product:
+                print(f"Found DualSense: {product}")
+                # print(device)
+                #print(self.get_transport(hid, device["bus_type"]))
+                # print("bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb")
+                transport = "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+                controllers.append(
+                    cls(device, transport)
+                )
+
+        return controllers
+    
+    def connect(self):
+        try:
+            import hid
+            self.device = hid.Device(self.device["vendor_id"], self.device["product_id"])
+            #self._state.connected = True
+            print("DualSense connected")
+            return True
+        except Exception as e:
+            print(f"DualSense connection failed: {e}")
+            return False
+
+    def disconnect(self):
+        return
+    
     def applyDeadZone(self, value):
         diff = value - self.center
 
@@ -26,14 +117,14 @@ class DualSenseController():
         else:
             return (diff + self.dead_zone) / (128 - self.dead_zone)
     
-    def read(self):
-        size = self.report_sizes[self.transport]
-        data = self.device.read(size, timeout=5)
+    # def read(self):
+    #     size = self.report_sizes[self.transport]
+    #     data = self.device.read(size, timeout=5)
        
-        if not data:
-            return None
+    #     if not data:
+    #         return None
         
-        return self.parsers[self.transport](data)
+    #     return self.parsers[self.transport](data)
 
     def parse_bluetooth(self, data):
         dpad = data[5] & 0x0F
@@ -134,3 +225,22 @@ class DualSenseController():
                 "r2_pct": round(r2_analog / 255.0, 2),
             },
         }
+
+    def update(self):
+
+        # data = self.device.read(64)
+
+        # if data:
+        #     self.state = self.parse(data)
+
+        size = self.report_sizes[self.transport]
+        data = self.device.read(size, timeout=5)
+        
+        if not data:
+            return None
+        self._state = self.parsers[self.transport](data)
+        return self._state
+
+    def get_state(self):
+        return copy.copy(self._state)
+

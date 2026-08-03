@@ -18,7 +18,14 @@ def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
     ctrlManager = ControllerManager()
     ctrlManager.scan()
     while not stop_event.is_set():
-        ctrlManager.update_controller_state(state, lock)
+        ctrlManager.update()
+        #print(ctrlManager.get_states())
+        with lock:
+            state.inputs = ctrlManager.get_states()
+        #ctrlManager.update_controller_state(state, lock)
+        #with lock:
+        #    rover_state.controller = manager.get_state()
+        #time.sleep(0.005)
 
 def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
     serial_driver = RealSerialDriver("/dev/serial0", 115200)

@@ -4,3 +4,7 @@ pyserial
 flask
 flask-socketio
 #eventlet
+picamera2
+flask-cors 
+aiortc 
+av

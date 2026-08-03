@@ -1,0 +1,86 @@
+<html>
+
+<body>
+
+<h1>RPiCar Camera</h1>
+
+
+<video id="video"
+       autoplay
+       playsinline
+       width="1280">
+</video>
+
+
+<script>
+
+
+let pc = new RTCPeerConnection();
+
+
+pc.ontrack = function(event){
+
+    document.getElementById(
+        "video"
+    ).srcObject = event.streams[0];
+
+};
+
+
+
+async function start(){
+
+    pc.addTransceiver(
+        "video",
+        {
+            direction:"recvonly"
+        }
+    );
+
+
+    let offer =
+        await pc.createOffer();
+
+
+    await pc.setLocalDescription(
+        offer
+    );
+
+
+    let response =
+        await fetch(
+            "/offer",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+                body:
+                JSON.stringify(
+                    pc.localDescription
+                )
+            }
+        );
+
+
+    let answer =
+        await response.json();
+
+
+    await pc.setRemoteDescription(
+        answer
+    );
+
+}
+
+
+start();
+
+
+</script>
+
+
+</body>
+
+</html>

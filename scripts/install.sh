@@ -10,6 +10,7 @@ sudo apt install -y \
     python3-venv \
     python3-pip \
     git
+    
 
 echo "Creating virtual environment..."
 cd "$APP_DIR"
