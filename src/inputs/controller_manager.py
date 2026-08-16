@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 class ControllerManager:
     def __init__(self):
         self._controllers = []
-        self._state = None
 
     def register(self, controller):
         self._controllers.append(controller)
@@ -47,7 +46,6 @@ class ControllerManager:
     def update(self):
         for controller in self._controllers:
             controller.update()
-            #print(controller._state)
 
     def get_states(self):
         return [
@@ -57,8 +55,8 @@ class ControllerManager:
 
     def scan(self):
         AVAILABLE_CONTROLLERS = [
-            DualSenseController,
-           # XboxController
+            DualSenseController
+   #         XboxController
         ]
         for controller_type in AVAILABLE_CONTROLLERS:
             controllers = controller_type.scan()
@@ -67,31 +65,8 @@ class ControllerManager:
                 if controller.connect():
                     self.register(controller)
 
-    # def scan2(self):
-    #     controller_types = [
-    #         DualSenseController,
-    #         XboxController
-    #     ]
-        
-    #     for controller_type in controller_types:
-    #        found = controller_type.scan() 
-    #        for controller in found:
-    #             if controller.connect():
-    #                 self.controllers.append(controller)
 
-    #     logger.info(f"Found {len(self.controllers)} controllers")
-
-    #     return self.controllers
-
-    # def scan(self):
-    #     logger.info("Scanning controllers")
-    #     devices = hid.enumerate()
-    #     for d in devices:
-    #         controller = self.create_controller(d)
-    #         if controller:
-    #             self.controllers.append(controller)
-    #             logger.info("Connected %s", controller.__class__.__name__)
-    #     return self.controllers
+  
     
     # def is_bluetooth(self, device):
     #     return device.get("bus_type") == hid.BusType.BLUETOOTH
@@ -116,23 +91,3 @@ class ControllerManager:
     #         return XboxController(dev, transport)
 
     #     return None
-
-
-    # def update_controller_state(self, state, lock):
-    #     for i, controller in enumerate(self.controllers):
-    #         data = controller.read()
-    #         if data:
-    #             with lock:
-    #                 state.inputs[i] = data
-
-    # def update(self):
-    #     for controller in self.controllers:
-    #         try:
-    #             controller.update()
-    #             # self.states[controller.name] = (
-    #             #     controller.get_state()
-    #             # )
-    #         except Exception as e:
-    #             print(
-    #                 f"{controller.name} update failed: {e}"
-                # )

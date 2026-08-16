@@ -1,3 +1,25 @@
+[project]
+name = "rpicar"
+version = "0.1.0"
+description = "raspberry pi car"
+readme = "readme.md"
+
+dependencies = [
+    "hidapi",
+    "hid",
+    "pyserial",
+    "flask",
+    "flask-socketio"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+
+[project.scripts]
+rpicar = "main:main"
+
 [tool.poe.tasks]
 dev = "source .venv/Scripts/activate"
 run = "python src/main.py"

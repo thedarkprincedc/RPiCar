@@ -10,8 +10,8 @@ class MotorController():
 
     def controller_to_motors(self, controller):
         # DualSense sticks
-        forward = -controller["sticks"]["ly"]  # invert because up is negative
-        turn = controller["sticks"]["lx"]
+        forward = -controller["ly"]  # invert because up is negative
+        turn = controller["lx"]
 
         forward = self.apply_deadzone(forward)
         turn = self.apply_deadzone(turn)

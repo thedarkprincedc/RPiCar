@@ -1,5 +1,10 @@
-class XboxController():
+from inputs.base_controller import BaseController
+from inputs.controller_state import ControllerState
+
+
+class XboxController(BaseController):
     def __init__(self, device, transport="usb"):
+        super().__init__()
         self.device = device
         self.transport = transport
         self.parsers = {
@@ -10,6 +15,7 @@ class XboxController():
             "bluetooth": 64,
             "usb": 64
         }
+        self._state = ControllerState()
 
     def read(self):
         size = self.report_sizes[self.transport]

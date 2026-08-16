@@ -56,3 +56,13 @@ python src/main.py
 ```
 
 PORT = "/dev/serial0"
+
+
+Install Dependencies (Environment)
+```bash
+pip install -e ".[dev]"
+```
+Install Dependencies 
+```bash
+pip install .
+```
