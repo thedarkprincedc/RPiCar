@@ -1,7 +1,7 @@
 [project]
 name = "rpicar"
 version = "0.1.0"
-description = "raspberry pi car"
+description = "Remote control car software for Raspberry Pi using an waveshare rover chasis."
 readme = "readme.md"
 
 dependencies = [

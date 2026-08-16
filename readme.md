@@ -40,14 +40,25 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-Install Dependencies (Development)
+### Install Dependencies (Requirements)
+Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+Install Dependencies (Environment - Development)
 ```bash
 pip install -r requirements-dev.txt
 ```
 
+### Install Dependencies (PyProject)
 Install Dependencies
 ```bash
-pip install -r requirements.txt
+pip install .
+```
+
+Install Dependencies (Environment - Development) 
+```bash
+pip install -e ".[dev]"
 ```
 
 Run Application (On Car - Linux)
@@ -56,13 +67,4 @@ python src/main.py
 ```
 
 PORT = "/dev/serial0"
-
-
-Install Dependencies (Environment)
-```bash
-pip install -e ".[dev]"
-```
-Install Dependencies 
-```bash
-pip install .
-```
+SupplementaryGroups=dialout,input,bluetooth
