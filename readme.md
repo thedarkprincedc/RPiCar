@@ -68,3 +68,22 @@ python src/main.py
 
 PORT = "/dev/serial0"
 SupplementaryGroups=dialout,input,bluetooth
+
+
+### Synchronize Files from (Windows)
+```bash
+scripts/dev.sh
+```
+### Start Daemon
+```bash
+scripts/setup.sh
+```
+### Uninstall Daemon
+```bash
+scripts/uninstall.sh
+```
+
+### Run Application
+```bash
+scripts/run.sh
+```

@@ -2,6 +2,7 @@
 from inputs.dualsense_controller import DualSenseController
 from inputs.dualshock_controller import DualShockController
 from inputs.xbox_controller import XboxController
+from inputs.websocket_controller import WebSocketController
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,9 @@ class ControllerManager:
     def __init__(self):
         self._controllers = []
 
+    def has_controller(self):
+        return bool(self._controllers)
+
     def register(self, controller):
         self._controllers.append(controller)
 
@@ -55,6 +59,7 @@ class ControllerManager:
 
     def scan(self):
         AVAILABLE_CONTROLLERS = [
+            WebSocketController,
             DualSenseController
    #         XboxController
         ]

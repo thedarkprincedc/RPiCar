@@ -9,7 +9,11 @@ dependencies = [
     "hid",
     "pyserial",
     "flask",
-    "flask-socketio"
+    "flask-socketio",
+    "flask-cors",
+
+    "aiohttp",
+    "opencv-python",
 ]
 
 [project.optional-dependencies]
@@ -19,6 +23,7 @@ dev = [
 
 [project.scripts]
 rpicar = "main:main"
+rpiweb = "server:main"
 
 [tool.poe.tasks]
 dev = "source .venv/Scripts/activate"

@@ -1,6 +1,9 @@
+
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
 import copy
+import logging
+logger = logging.getLogger(__name__)
 
 class DualSenseController(BaseController):
     def __init__(self, device, transport = "usb"):
@@ -29,7 +32,7 @@ class DualSenseController(BaseController):
         try:
             import hid
         except ImportError:
-            print("hid library not available")
+            #logger.info("hid library not available")
             return controllers
 
         for device in hid.enumerate():

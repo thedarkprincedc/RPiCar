@@ -1,4 +1,8 @@
 from interfaces.serial_driver import SerialDriver
+import logging
+from logging_config import setup_logging
+
+logger = logging.getLogger(__name__)
 
 class DummySerialDriver(SerialDriver):
     def __init__(self):
@@ -6,7 +10,7 @@ class DummySerialDriver(SerialDriver):
 
     def write(self, data):
         self.last_command = data
-        print("DUMMY SERIAL:", data.decode().strip())
-
+        #logger.info("DUMMY SERIAL: " + data.decode().strip())
+       
     def close(self):
-        print("Dummy serial closed")
+        logger.info("Dummy serial closed")

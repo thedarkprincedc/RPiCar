@@ -1,44 +1,50 @@
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO
+import logging
 
-app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+from aiohttp import web
+from web.routes.camera import routes as camera_routes
+from web.routes.controls import routes as control_routes
+from web.routes.telemetry import routes as telemetry_routes
+from pathlib import Path
+from web.camera import Camera
 
-# route endpoints
-@app.route("/")
-def index():
-    return render_template("index.html")
+BASE_DIR = Path(__file__).parent
 
-@app.route("/video")
-def video():
-   return render_template("video.html")
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
+    print("Starting RPiWeb...")
+    
+    app = web.Application()
 
-@app.route("/controls")
-def controls():
-   return render_template("controls.html")
+    app["camera"] = Camera(
+        device=0,
+        width=1920,
+        height=1080,
+        fps=60
+    )
 
-@app.route("/status")
-def status():
-   return render_template("status.html")
+    app["templates"] = BASE_DIR / "web/templates"
 
-# socket endpoints
-@socketio.on("connect")
-def on_connect():
-    print(f"Connected: {request.sid}")
+    app.router.add_static(
+        "/static/",
+        BASE_DIR / "web/static"
+    )
 
-@socketio.on("disconnect")
-def on_disconnect():
-    print(f"Disconnected: {request.sid}")
+    app.add_routes(camera_routes)
+    app.add_routes(control_routes)
+    app.add_routes(telemetry_routes)
 
-@socketio.on("message")
-def handle_message(data):
-    print("From:", request.sid)
-    print("Data:", data)
+    print("Open http://localhost:5000")
+
+    web.run_app(
+        app,
+        host="0.0.0.0",
+        port=5000,
+        access_log=logging.getLogger("aiohttp.access"),
+        access_log_format='%a "%r" %s %b "%{User-Agent}i"'
+    )
 
 if __name__ == "__main__":
-    #app.run(debug=True)
-    socketio.run(app, 
-        host="0.0.0.0", 
-        port=3000, 
-        debug=True
-    )
+    main()

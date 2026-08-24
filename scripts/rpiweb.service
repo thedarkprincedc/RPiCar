@@ -1,16 +1,14 @@
 [Unit]
-Description=Waveshare Rover Controller
+Description=Waveshare Rover Web Interface
 After=bluetooth.target
 
 [Service]
 Type=simple
 User=admin
 WorkingDirectory=/home/admin/RPiCar
-ExecStart=/home/admin/RPiCar/venv/bin/python src/main.py
-
+ExecStart=/home/admin/RPiCar/venv/bin/python /home/admin/RPiCar/src/server.py
 Restart=always
 RestartSec=3
-SupplementaryGroups=dialout,input,bluetooth
 
 [Install]
 WantedBy=multi-user.target
