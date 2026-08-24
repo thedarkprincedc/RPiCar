@@ -1,4 +1,5 @@
 import cv2
+import platform
 
 class Camera:
     def __init__(
@@ -8,10 +9,20 @@ class Camera:
         height=1080, 
         fps=60
     ):
+        platform_os = platform.system()
+        capture_os = {
+            'Windows': cv2.CAP_MSMF,
+            'Linux': cv2.CAP_V4L2
+        }
+
+        if(capture_os[platform_os] == None):
+            raise Exception("No capture format found for os")
+        
         self.camera = cv2.VideoCapture(
             device, 
-            cv2.CAP_DSHOW
+            capture_os[platform_os]
         )
+
         self.camera.set(
             cv2.CAP_PROP_FRAME_WIDTH,
             width
