@@ -1,6 +1,9 @@
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
+import copy
+import logging
 
+logger = logging.getLogger("xbox_controller")
 
 class XboxController(BaseController):
     def __init__(self, device, transport="usb"):
@@ -17,15 +20,55 @@ class XboxController(BaseController):
         }
         self._state = ControllerState()
 
-    def read(self):
+    @classmethod
+    def scan(cls):
+        controllers = []
+
+        try:
+            import hid
+        except ImportError:
+            #logger.info("hid library not available")
+            return controllers
+
+        for device in hid.enumerate():
+
+            product = device.get("product_string", "")
+
+            if "XBOX" in product:
+                print(f"Found XBOX: {product}")
+                transport = "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+                controllers.append(
+                    cls(device, transport)
+                )
+
+        return controllers
+
+    def connect(self):
+        try:
+            import hid
+            self.device = hid.Device(self.device["vendor_id"], self.device["product_id"])
+            #self._state.connected = True
+            print("XBOX connected")
+            return True
+        except Exception as e:
+            print(f"XBOX connection failed: {e}")
+            return False
+
+    def disconnect(self):
+            return
+    
+    def update(self):
         size = self.report_sizes[self.transport]
         data = self.device.read(size, timeout=5)
 
         if not data:
             return None
         
-        if self.parsers[self.transport]:
-            self.parsers[self.transport](data)
+        self._state = self.parsers[self.transport](data)
+        return self._state
+    
+    def get_state(self):
+        return copy.copy(self._state)
 
     def parse_bluetooth(self, data):
         return self.parse(data)

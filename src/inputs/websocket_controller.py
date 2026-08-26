@@ -1,36 +1,35 @@
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
-from aiohttp import ClientSession, WSMsgType
+from aiohttp import ClientSession, WSMsgType, ClientConnectorError 
 import threading
 import asyncio
 import json
 import copy
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("websocket_controller")
 
 class WebSocketController(BaseController):
     def __init__(self, url, transport = "websocket"):
         super().__init__()
-
         self.url = url
         self._state = ControllerState()
-
         self.thread = None
-        self.stop_event = threading.Event
+        self.stop_event = threading.Event()
+        self.connected = False
+        self.connected_event = threading.Event()
 
     def connect(self):
         try: 
             logger.info("WebSocketController connected")
-
             self.thread = threading.Thread(
                 target=self._run,
                 daemon=True
             )
-
             self.thread.start()
-
-            return True
+            self.connected_event.wait(timeout=5)
+            return self.connected_event.is_set()
+        
         except Exception as e:
             logger.info(f"WebSocketController connection failed: {e}")
             return False
@@ -49,7 +48,7 @@ class WebSocketController(BaseController):
         }
     
     def get_state(self):
-            return copy.copy(self._state)
+        return copy.copy(self._state)
     
     @classmethod
     def scan(cls):
@@ -64,31 +63,50 @@ class WebSocketController(BaseController):
     def _run(self):
         asyncio.run(self._connect())
 
+    # async def _connect(self):
+    #     async with ClientSession() as session:
+    #         async with session.ws_connect(self.url) as ws:
+    #             self.connected = True
+    #             logger.info(
+    #                 "WebSocket connected"
+    #             )
+
+    #             try:
+    #                 async for message in ws:
+    #                     if message.type == WSMsgType.TEXT:
+    #                         self._handle_message(message.data)
+
+    #                     elif message.type == WSMsgType.ERROR:
+    #                         print(ws.exception())
+
+    #             finally:
+    #                 self.connected = False
+    #                 self.reset()
+    #                 logger.info(
+    #                     "WebSocket disconnected"
+    #                 )
+
     async def _connect(self):
-        async with ClientSession() as session:
-            async with session.ws_connect(self.url) as ws:
-                self.connected = True
-                logger.info(
-                    "WebSocket connected"
-                )
+        try:
+            async with ClientSession() as session:
+                async with session.ws_connect(self.url) as ws:
+                   
+                    self.connected = True
+                    self.connected_event.set()
+                    
+                    logger.info("WebSocket connected: %s", self.url)
 
-                try:
                     async for message in ws:
-                        if message.type == WSMsgType.TEXT:
-                            self._handle_message(message.data)
+                        await self._handle_message(message.data)
 
-                        elif message.type == WSMsgType.ERROR:
-                            print(ws.exception())
+        except ClientConnectorError as e:
+            self.connected = False
+            logger.warning("WebSocket connection failed: %s", e)
+        except Exception:
+            self.connected = False
+            logger.exception("WebSocket error")
 
-                finally:
-                    self.connected = False
-                    self.reset()
-                    logger.info(
-                        "WebSocket disconnected"
-                    )
-
-    def _handle_message(self, data):
+    async def _handle_message(self, data):
         data = json.loads(data)
-        print(data)
-
+        logger.info(data)
         self._state.update(data)

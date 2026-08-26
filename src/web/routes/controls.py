@@ -1,14 +1,8 @@
+from aiohttp import web, WSMsgType
 import json
 import logging
-from aiohttp import web, WSMsgType
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
-)
 
 logger = logging.getLogger(__name__)
-
 
 routes = web.RouteTableDef()
 

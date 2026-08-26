@@ -55,7 +55,6 @@ window.addEventListener("keydown", (event) => {
         event.preventDefault();
         keys.add(key);
         sendKeys();
-        //sendControl("forward");
     }
 })
 
@@ -64,8 +63,7 @@ window.addEventListener("keyup", (event) => {
     if (["w", "a", "s", "d"].includes(key)) {
         event.preventDefault();
         keys.delete(key);
-        sendKeys();
-        //sendControl("stop");
+       // sendKeys();
     }
 })
 
@@ -78,8 +76,12 @@ function sendKeys() {
     if(keys.has("s")) ctrl.y = -1
     if(keys.has("a")) ctrl.x = -1
     if(keys.has("d")) ctrl.x = 1
-    console.log(ctrl)
-    sendControl("stop")
+ =
+    sendControl({
+        type: 'control',
+        x: ctrl.x,
+        y: ctrl.y
+    })
     // console.log(
     //     keys
     // )

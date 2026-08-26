@@ -1,3 +1,10 @@
+from inputs.base_controller import BaseController
+from inputs.controller_state import ControllerState
+import copy
+import logging
+
+logger = logging.getLogger("dualshock_controller")
+
 PS4_D_PAD_MAP = {
     8: 'neutral',
     0: 'up',
@@ -10,8 +17,9 @@ PS4_D_PAD_MAP = {
     7: 'upLeft'
 }
 
-class DualShockController():
+class DualShockController(BaseController):
     def __init__(self, device, transport="usb"):
+        super().__init__()
         self.device = device
         self.transport = transport
         self.dead_zone = 10     # tune this (usually 5-15)
@@ -24,6 +32,47 @@ class DualShockController():
             "bluetooth": 64,
             "usb": 64
         }
+        self._state = ControllerState()
+
+    def get_transport(self, hid, device):
+        return "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+    
+    @classmethod
+    def scan(cls):
+        controllers = []
+
+        try:
+            import hid
+        except ImportError:
+            #logger.info("hid library not available")
+            return controllers
+
+        for device in hid.enumerate():
+
+            product = device.get("product_string", "")
+
+            if "DualShock" in product:
+                print(f"Found DualShock: {product}")
+                transport = "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+                controllers.append(
+                    cls(device, transport)
+                )
+
+        return controllers
+
+    def connect(self):
+        try:
+            import hid
+            self.device = hid.Device(self.device["vendor_id"], self.device["product_id"])
+            #self._state.connected = True
+            print("DualShock connected")
+            return True
+        except Exception as e:
+            print(f"DualShock connection failed: {e}")
+            return False
+
+    def disconnect(self):
+        return
 
     def applyDeadZone(self, value):
         diff = value - self.center
@@ -43,9 +92,11 @@ class DualShockController():
         
         if not data:
             return None
-        
-        if self.parse_method[self.transport]:
-            self.parse_method[self.transport](data)
+        self._state = self.parsers[self.transport](data)
+        return self._state
+
+    def get_state(self):
+        return copy.copy(self._state)
 
     def parse_bluetooth(self, data):
         return self.parse(data)

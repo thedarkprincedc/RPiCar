@@ -1,20 +1,34 @@
-import logging
-
 from aiohttp import web
 from web.routes.camera import routes as camera_routes
 from web.routes.controls import routes as control_routes
 from web.routes.telemetry import routes as telemetry_routes
 from pathlib import Path
 from web.camera import Camera
+import logging
+from logging_config import setup_logging
+import argparse
+
+logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).parent
 
 def main():
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging",
     )
-    print("Starting RPiWeb...")
+
+    args = parser.parse_args()
+
+    setup_logging(
+        log_file="logs/server.log", 
+        console_level=logging.DEBUG if args.debug else logging.INFO
+    )
+
+    logger.info("Starting RPiWeb...")
     
     app = web.Application()
 

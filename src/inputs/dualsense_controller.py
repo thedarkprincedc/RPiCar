@@ -1,9 +1,9 @@
-
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
 import copy
 import logging
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger("dualsense_controller")
 
 class DualSenseController(BaseController):
     def __init__(self, device, transport = "usb"):

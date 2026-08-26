@@ -1,19 +1,15 @@
 import asyncio
-
 from aiohttp import web
 from aiortc import (
     RTCPeerConnection,
     RTCSessionDescription,
 )
 from aiortc.rtcrtpsender import RTCRtpSender
-
 from ..webrtc import CameraTrack
-
 
 routes = web.RouteTableDef()
 
 pcs = set()
-
 
 @routes.get("/")
 async def index(request):

@@ -9,18 +9,9 @@ from display_live import DisplayLive
 import logging
 from logging_config import setup_logging
 import platform
+import argparse
 
-setup_logging()
-
-logger = logging.getLogger(__name__)
-
-# def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
-#     ctrlManager = ControllerManager()
-#     ctrlManager.scan()
-#     while not stop_event.is_set():
-#         ctrlManager.update()
-#         with lock:
-#             state.inputs = ctrlManager.get_states()
+logger = logging.getLogger("main")
 
 def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
     ctrlManager = ControllerManager()
@@ -38,6 +29,7 @@ def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
 
 def serial_thread(state, lock, stop_event, serial_driver, refresh_rate = 0.02):
     motor_controller = MotorController()
+    last_battery_check = time.monotonic()
     while not stop_event.is_set():
         ctrl = None
 
@@ -49,6 +41,17 @@ def serial_thread(state, lock, stop_event, serial_driver, refresh_rate = 0.02):
             motors = motor_controller.controller_to_motors(ctrl)     
             command = f'{{"T":1,"L":{motors["left"]},"R":{motors["right"]}}}\n'
             serial_driver.write(command.encode())
+
+        # Battery check every 2 minutes
+        now = time.monotonic()
+
+        if now - last_battery_check >= 120:
+            battery = serial_driver.get_battery()
+
+            with lock:
+                state.battery = battery
+
+            last_battery_check = now
 
         time.sleep(refresh_rate)
     serial_driver.close()
@@ -64,6 +67,21 @@ def telemetry_thread(state, lock, stop_event, refresh_rate = 0.04):
         time.sleep(refresh_rate)
 
 def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging",
+    )
+
+    args = parser.parse_args()
+
+    setup_logging(
+        log_file="logs/main.log", 
+        console_level=logging.DEBUG if args.debug else logging.INFO
+    )
+
     logger.info("Starting RPiCar...")
     state = State()
     stop_event = threading.Event()
@@ -98,7 +116,6 @@ def main():
             time.sleep(1)
 
     except KeyboardInterrupt:
-        #logger.info("Shutting down...")
         stop_event.set()
         for t in threads:
             if not t.daemon:
