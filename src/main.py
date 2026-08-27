@@ -81,7 +81,6 @@ def main():
         log_file="logs/main.log", 
         console_level=logging.DEBUG if args.debug else logging.INFO
     )
-
     logger.info("Starting RPiCar...")
     state = State()
     stop_event = threading.Event()
@@ -120,7 +119,8 @@ def main():
         for t in threads:
             if not t.daemon:
                 t.join(timeout=2)
-        logger.info("Shutdown Complete...")
+
+    logger.info("Shutdown RPiCar...")
 
 if __name__ == "__main__":
     main()

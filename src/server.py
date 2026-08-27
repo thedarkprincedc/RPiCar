@@ -27,9 +27,7 @@ def main():
         log_file="logs/server.log", 
         console_level=logging.DEBUG if args.debug else logging.INFO
     )
-
     logger.info("Starting RPiWeb...")
-    
     app = web.Application()
 
     app["camera"] = Camera(
@@ -59,6 +57,8 @@ def main():
         access_log=logging.getLogger("aiohttp.access"),
         access_log_format='%a "%r" %s %b "%{User-Agent}i"'
     )
+    
+    logger.info("Shutdown RPiWeb...")
 
 if __name__ == "__main__":
     main()

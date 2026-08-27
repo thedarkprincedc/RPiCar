@@ -10,14 +10,15 @@ import logging
 logger = logging.getLogger("websocket_controller")
 
 class WebSocketController(BaseController):
-    def __init__(self, url, transport = "websocket"):
+    def __init__(self):
         super().__init__()
-        self.url = url
-        self._state = ControllerState()
+        self.url = "ws://localhost:5000/ws/control"
+        self.transport = "websocket"
         self.thread = None
-        self.stop_event = threading.Event()
         self.connected = False
+        self.stop_event = threading.Event()
         self.connected_event = threading.Event()
+        self._state = ControllerState()
 
     def connect(self):
         try: 
@@ -53,10 +54,8 @@ class WebSocketController(BaseController):
     @classmethod
     def scan(cls):
         controllers = []
-        transport = "websocket"
-        url = "ws://localhost:5000/ws/control"
         controllers.append(
-            cls(url,transport)
+            cls()
         )
         return controllers
 
