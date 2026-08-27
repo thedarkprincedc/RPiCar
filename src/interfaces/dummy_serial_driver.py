@@ -10,7 +10,7 @@ class DummySerialDriver(SerialDriver):
 
     def write(self, data):
         self.last_command = data
-        #logger.debug(data.decode().strip())
+        logger.debug(data.decode().strip())
        
     def close(self):
         logger.debug("Dummy Serial closed")

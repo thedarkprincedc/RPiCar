@@ -6,39 +6,47 @@ import logging
 logger = logging.getLogger("xbox_controller")
 
 class XboxController(BaseController):
-    def __init__(self, device, transport="usb"):
+    def __init__(self, device_info, transport="usb"):
         super().__init__()
-        self.device = device
+        self.device_info = device_info
+        self.device = None
         self.transport = transport
         self.parsers = {
             "bluetooth": self.parse_bluetooth,
-            "usb": self.parse_usb
+            "USB": self.parse_usb
         }
         self.report_sizes = {
             "bluetooth": 64,
-            "usb": 64
+            "USB": 64
         }
         self._state = ControllerState()
 
     @classmethod
     def scan(cls):
         controllers = []
+        BUS_TYPES = {
+            0: "Unknown",
+            1: "USB",
+            2: "Bluetooth",
+            3: "I2C",
+            4: "SPI",
+        }
 
         try:
             import hid
         except ImportError:
-            #logger.info("hid library not available")
+            logger.info("hid library not available")
             return controllers
 
-        for device in hid.enumerate():
+        for device_info in hid.enumerate():
 
-            product = device.get("product_string", "")
+            product = device_info.get("product_string", "")
 
             if "XBOX" in product:
                 print(f"Found XBOX: {product}")
-                transport = "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+                transport = BUS_TYPES[device_info["bus_type"]]
                 controllers.append(
-                    cls(device, transport)
+                    cls(device_info, transport)
                 )
 
         return controllers
@@ -46,12 +54,14 @@ class XboxController(BaseController):
     def connect(self):
         try:
             import hid
-            self.device = hid.Device(self.device["vendor_id"], self.device["product_id"])
+            self.device = hid.device()           
+            self.device.open_path(self.device_info["path"])
+                    
             #self._state.connected = True
             print("XBOX connected")
             return True
         except Exception as e:
-            print(f"XBOX connection failed: {e}")
+            logger.info(f"XBOX connection failed: {e}")
             return False
 
     def disconnect(self):
@@ -59,7 +69,7 @@ class XboxController(BaseController):
     
     def update(self):
         size = self.report_sizes[self.transport]
-        data = self.device.read(size, timeout=5)
+        data = self.device.read(size)
 
         if not data:
             return None
@@ -80,33 +90,33 @@ class XboxController(BaseController):
         buttons_byte = data[2]
         return {
             "dpad": {},
-            "sticks": {
-                "lx": int.from_bytes(data[10:12], byteorder='little', signed=True),
-                "ly": int.from_bytes(data[12:14], byteorder='little', signed=True),
-                "rx": int.from_bytes(data[14:16], byteorder='little', signed=True),
-                "ry": int.from_bytes(data[16:18], byteorder='little', signed=True)
-            },
-            "buttons": {
-                "a":      bool(buttons_byte & (1 << 4)),
-                "b":      bool(buttons_byte & (1 << 5)),
-                "x":      bool(buttons_byte & (1 << 6)),
-                "y":      bool(buttons_byte & (1 << 7))
-                # "b":       { byte: 14, mask: 0x02},
-                # "x":       { byte: 14, mask: 0x08},
-                # "y":       { byte: 14, mask: 0x10},
-                # "lb":      { byte: 14, mask: 0x40},
-                # "rb":      { byte: 14, mask: 0x80},
-                # "lt":      { },
-                # "rt":      { },
-                # "view":    { byte: 15, mask: 0x04},
-                # "options": { byte: 15, mask: 0x08},
-                # "xbox":    { byte: 15, mask: 0x10},
-                # "ltb":     { byte: 15, mask: 0x20},
-                # "rtb":     { byte: 15, mask: 0x40},
-                # "share":   { byte: 16, mask: 0x01}
-            },
-            "triggers": {
-                "lt": int.from_bytes(data[9:11], 'little'),
-                "rt": int.from_bytes(data[11:13], 'little')
-            },
+            # analog
+            "lx": int.from_bytes(data[10:12], byteorder='little', signed=True),
+            "ly": int.from_bytes(data[12:14], byteorder='little', signed=True),
+            "rx": int.from_bytes(data[14:16], byteorder='little', signed=True),
+            "ry": int.from_bytes(data[16:18], byteorder='little', signed=True),
+            # analog trigger
+
+            #buttons
+            "a":      bool(buttons_byte & (1 << 4)),
+            "b":      bool(buttons_byte & (1 << 5)),
+            "x":      bool(buttons_byte & (1 << 6)),
+            "y":      bool(buttons_byte & (1 << 7))
+            # "b":       { byte: 14, mask: 0x02},
+            # "x":       { byte: 14, mask: 0x08},
+            # "y":       { byte: 14, mask: 0x10},
+            # "lb":      { byte: 14, mask: 0x40},
+            # "rb":      { byte: 14, mask: 0x80},
+            # "lt":      { },
+            # "rt":      { },
+            # "view":    { byte: 15, mask: 0x04},
+            # "options": { byte: 15, mask: 0x08},
+            # "xbox":    { byte: 15, mask: 0x10},
+            # "ltb":     { byte: 15, mask: 0x20},
+            # "rtb":     { byte: 15, mask: 0x40},
+            # "share":   { byte: 16, mask: 0x01}
+         
+           
+            # "lt": int.from_bytes(data[9:11], 'little'),
+            # "rt": int.from_bytes(data[11:13], 'little')
         }

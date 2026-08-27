@@ -21,7 +21,7 @@ class WebSocketController(BaseController):
 
     def connect(self):
         try: 
-            logger.info("WebSocketController connected")
+            #logger.info("WebSocketController connected")
             self.thread = threading.Thread(
                 target=self._run,
                 daemon=True

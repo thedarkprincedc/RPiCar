@@ -10,10 +10,10 @@ class ControllerManager:
     def __init__(self):
         self._controllers = []
         self.available_controllers = [
-            DualSenseController,
-            DualShockController,
             XboxController,
-            WebSocketController
+            DualShockController,
+            DualSenseController,
+            #WebSocketController
         ]
 
     def has_controller(self):
@@ -21,7 +21,7 @@ class ControllerManager:
 
     def register(self, controller):
         self._controllers.append(controller)
-        logger.info(f"{controller.__class__.__name__} registered")
+        logger.info(f"Registered {controller.__class__.__name__}")
 
     def connect_all(self):
         for controller in self._controllers:
@@ -41,7 +41,9 @@ class ControllerManager:
     def scan(self):
         for controller_type in self.available_controllers:
             controllers = controller_type.scan()
-            logger.info(controller_type.__name__)
+            logger.info(f"Scanned {controller_type.__name__}")
             for controller in controllers:
                 if controller.connect():
+                    logger.info(f"Connected {controller_type.__name__}")
                     self.register(controller)
+                    return

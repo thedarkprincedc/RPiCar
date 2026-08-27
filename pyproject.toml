@@ -6,13 +6,13 @@ readme = "readme.md"
 
 dependencies = [
     "hidapi",
-    "hid",
     "pyserial",
     "flask",
     "flask-socketio",
     "flask-cors",
 
     "aiohttp",
+    "aiortc",
     "opencv-python",
 ]
 

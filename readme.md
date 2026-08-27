@@ -87,3 +87,10 @@ scripts/uninstall.sh
 ```bash
 scripts/run.sh
 ```
+
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .
+
+
+python -m pip install .

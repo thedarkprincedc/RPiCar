@@ -63,7 +63,6 @@ window.addEventListener("keyup", (event) => {
     if (["w", "a", "s", "d"].includes(key)) {
         event.preventDefault();
         keys.delete(key);
-       // sendKeys();
     }
 })
 
@@ -82,15 +81,4 @@ function sendKeys() {
         x: ctrl.x,
         y: ctrl.y
     })
-    // console.log(
-    //     keys
-    // )
-    // console.log(
-    //     JSON.stringify({
-    //         keys: [...keys]
-    //     })
-    // )
-    // ws.send(JSON.stringify({
-    //     keys: [...keys]aw
-    // }));
 }

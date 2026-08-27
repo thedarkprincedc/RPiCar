@@ -6,44 +6,49 @@ import logging
 logger = logging.getLogger("dualsense_controller")
 
 class DualSenseController(BaseController):
-    def __init__(self, device, transport = "usb"):
+    def __init__(self, device_info, transport = "usb"):
         super().__init__()
-        self.device = device
+        self.device_info = device_info
+        self.device = None
         self.transport = transport
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
         self.parsers = {
             "bluetooth": self.parse_bluetooth,
-            "usb": self.parse_usb
+            "USB": self.parse_usb
         }
         self.report_sizes = {
             "bluetooth": 78,
-            "usb": 64
+            "USB": 64
         }
         self._state = ControllerState()
-
-    def get_transport(self, hid, device):
-        return "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
 
     @classmethod
     def scan(cls):
         controllers = []
+        BUS_TYPES = {
+            0: "Unknown",
+            1: "USB",
+            2: "Bluetooth",
+            3: "I2C",
+            4: "SPI",
+        }
 
+        
         try:
             import hid
         except ImportError:
-            #logger.info("hid library not available")
+            logger.info("hid library not available")
             return controllers
 
-        for device in hid.enumerate():
+        for device_info in hid.enumerate():
 
-            product = device.get("product_string", "")
+            product = device_info.get("product_string", "")
 
             if "DualSense" in product:
-                print(f"Found DualSense: {product}")
-                transport = "bluetooth" if device.get("bus_type") == hid.BusType.BLUETOOTH else "usb"
+                transport = BUS_TYPES[device_info["bus_type"]]
                 controllers.append(
-                    cls(device, transport)
+                    cls(device_info, transport)
                 )
 
         return controllers
@@ -51,12 +56,13 @@ class DualSenseController(BaseController):
     def connect(self):
         try:
             import hid
-            self.device = hid.Device(self.device["vendor_id"], self.device["product_id"])
+            self.device = hid.device()           
+            self.device.open_path(self.device_info["path"])
+         
             #self._state.connected = True
-            print("DualSense connected")
             return True
         except Exception as e:
-            print(f"DualSense connection failed: {e}")
+            logger.error(f"DualSense connection failed: {e}")
             return False
 
     def disconnect(self):
@@ -76,11 +82,12 @@ class DualSenseController(BaseController):
 
     def update(self):
         size = self.report_sizes[self.transport]
-        data = self.device.read(size, timeout=5)
-        
+        data = self.device.read(size)
+       
         if not data:
             return None
         self._state = self.parsers[self.transport](data)
+        #logger.info(self._state)
         return self._state
     
     def get_state(self):
@@ -167,50 +174,45 @@ class DualSenseController(BaseController):
         dpad = data[8] & 0x0F
         l2_analog = data[5]
         r2_analog = data[6]
+        
         return {
-            "dpad": {
-                "up":    dpad in (0, 1, 7),
-                "right": dpad in (1, 2, 3),
-                "down":  dpad in (3, 4, 5),
-                "left":  dpad in (5, 6, 7),
-            },
-            "sticks": {
-                "lx": self.applyDeadZone(data[1]),
-                "ly": self.applyDeadZone(data[2]),
-                "rx": self.applyDeadZone(data[3]),
-                "ry": self.applyDeadZone(data[4]),
-            },
-            "buttons": {
-                # Byte 8: Action Buttons & D-Pad
-                "square": bool(data[8] & 0x10),
-                "cross": bool(data[8] & 0x20),
-                "circle": bool(data[8] & 0x40),
-                "triangle": bool(data[8] & 0x80),
+            "up":    dpad in (0, 1, 7),
+            "right": dpad in (1, 2, 3),
+            "down":  dpad in (3, 4, 5),
+            "left":  dpad in (5, 6, 7),
+            # analog
+            "lx": self.applyDeadZone(data[1]),
+            "ly": self.applyDeadZone(data[2]),
+            "rx": self.applyDeadZone(data[3]),
+            "ry": self.applyDeadZone(data[4]),
 
-                # Byte 9: Triggers, Shoulders, and System Menus
-                "l1": bool(data[9] & 0x01),
-                "r1": bool(data[9] & 0x02),
-                "l2": bool(data[9] & 0x04),
-                "r2": bool(data[9] & 0x08),
+            # analog trigger
+            "l2": round(l2_analog / 255.0, 2),
+            "r2": round(r2_analog / 255.0, 2),
 
-                #
-                "options": bool(data[9] & 0x0010),
-                "create": bool(data[9] & 0x0020), # Share button
-                "l3": bool(data[9] & 0x0040),
-                "r3": bool(data[9] & 0x0080),
+            # buttons
+            # Byte 8: Action Buttons & D-Pad
+            "square": bool(data[8] & 0x10),
+            "cross": bool(data[8] & 0x20),
+            "circle": bool(data[8] & 0x40),
+            "triangle": bool(data[8] & 0x80),
 
-                # Byte 10: Center-Console Specialty Buttons
-                "ps": bool(data[10] & 0x01),
-                "touchpad": bool(data[10] & 0x02),
-                "mute": bool(data[10] & 0x04),
-            },
-            "triggers": {
-                "l2_raw": l2_analog,
-                "r2_raw": r2_analog,
-                # Optional: Normalized percentage value (0.0 to 1.0)
-                "l2_pct": round(l2_analog / 255.0, 2),
-                "r2_pct": round(r2_analog / 255.0, 2),
-            },
+            # Byte 9: Triggers, Shoulders, and System Menus
+            "l1": bool(data[9] & 0x01),
+            "r1": bool(data[9] & 0x02),
+
+            "l2digital": bool(data[9] & 0x04),
+            "r2digital": bool(data[9] & 0x08),
+
+            "options": bool(data[9] & 0x0010),
+            "create": bool(data[9] & 0x0020), # Share button
+            "l3": bool(data[9] & 0x0040),
+            "r3": bool(data[9] & 0x0080),
+
+            # Byte 10: Center-Console Specialty Buttons
+            "ps": bool(data[10] & 0x01),
+            "touchpad": bool(data[10] & 0x02),
+            "mute": bool(data[10] & 0x04),
         }
 
    
