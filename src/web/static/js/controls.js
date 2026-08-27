@@ -68,17 +68,15 @@ window.addEventListener("keyup", (event) => {
 
 function sendKeys() { 
     let ctrl = {
+        type: 'control',
         x: 0.0,
         y: 0.0
-    }
-    if(keys.has("w")) ctrl.y = 1
-    if(keys.has("s")) ctrl.y = -1
-    if(keys.has("a")) ctrl.x = -1
-    if(keys.has("d")) ctrl.x = 1
- =
-    sendControl({
-        type: 'control',
-        x: ctrl.x,
-        y: ctrl.y
-    })
+    };
+
+    if(keys.has("w")) ctrl.y =  1;
+    if(keys.has("s")) ctrl.y = -1;
+    if(keys.has("a")) ctrl.x = -1;
+    if(keys.has("d")) ctrl.x =  1;
+
+    sendControl(ctrl);
 }

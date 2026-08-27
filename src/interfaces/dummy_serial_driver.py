@@ -5,7 +5,9 @@ from logging_config import setup_logging
 logger = logging.getLogger("dummy_serial_driver")
 
 class DummySerialDriver(SerialDriver):
-    def __init__(self):
+    def __init__(self, port=None, baudrate=115200):
+        self.port = port
+        self.baudrate = baudrate
         self.last_command = None
 
     def write(self, data):

@@ -21,8 +21,7 @@ class ControllerManager:
 
     def register(self, controller):
         self._controllers.append(controller)
-        logger.info(f"Registered {controller.__class__.__name__}")
-
+       
     def connect_all(self):
         for controller in self._controllers:
             if controller.connect():
@@ -39,11 +38,13 @@ class ControllerManager:
         ]   
 
     def scan(self):
+        logger.info("Waiting for controller...")
         for controller_type in self.available_controllers:
             controllers = controller_type.scan()
-            logger.info(f"Scanned {controller_type.__name__}")
+            logger.debug(f"Scanned {controller_type.__name__}")
             for controller in controllers:
                 if controller.connect():
                     logger.info(f"Connected {controller_type.__name__}")
                     self.register(controller)
+                    logger.info(f"Registered {controller.__class__.__name__}")
                     return

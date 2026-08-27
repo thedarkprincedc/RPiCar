@@ -3,12 +3,10 @@ import threading
 from state import State
 from inputs.controller_manager import ControllerManager
 from drive.motor_controller import MotorController
-from interfaces.real_serial_driver import RealSerialDriver
-from interfaces.dummy_serial_driver import DummySerialDriver
+from interfaces.serial_factory import create_serial_driver
 from display_live import DisplayLive
 import logging
 from logging_config import setup_logging
-import platform
 import argparse
 
 logger = logging.getLogger("main")
@@ -17,7 +15,6 @@ def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
     ctrlManager = ControllerManager()
     while not stop_event.is_set():
         if not ctrlManager.has_controller():
-            logger.info("Waiting for controller...")
             ctrlManager.scan()
             if not ctrlManager.has_controller():
                 stop_event.wait(1.0)
@@ -75,22 +72,27 @@ def main():
         help="Enable debug logging",
     )
 
+    # parser.add_argument(
+    #     "--debug",
+    #     action="store_true",
+    #     default="logs/main.log"
+    #     help="Enable debug logging",
+    # )
+
     args = parser.parse_args()
 
     setup_logging(
         log_file="logs/main.log", 
         console_level=logging.DEBUG if args.debug else logging.INFO
     )
+    
     logger.info("Starting RPiCar...")
     state = State()
     stop_event = threading.Event()
     lock = threading.Lock()
-    current_os = platform.system()
-    
-    if(current_os == 'Linux'):
-        serial_driver = RealSerialDriver("/dev/serial0", 115200)
-    else:
-        serial_driver = DummySerialDriver()
+
+    serial_driver = create_serial_driver("/dev/serial0", 115200)
+    logger.info(f"Created {serial_driver.__class__.__name__} Port: {serial_driver.port} Baudrate: {serial_driver.baudrate}")
     
     threads = [
         threading.Thread(
@@ -120,7 +122,7 @@ def main():
             if not t.daemon:
                 t.join(timeout=2)
 
-    logger.info("Shutdown RPiCar...")
+        logger.info("Shutdown RPiCar...")
 
 if __name__ == "__main__":
     main()

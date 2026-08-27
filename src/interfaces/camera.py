@@ -1,8 +1,6 @@
 from picamera2 import Picamera2
 from aiortc import VideoStreamTrack
 from av import VideoFrame
-import asyncio
-
 
 class Camera:
 
