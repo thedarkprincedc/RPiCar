@@ -10,7 +10,6 @@ dependencies = [
     "flask",
     "flask-socketio",
     "flask-cors",
-
     "aiohttp",
     "aiortc",
     "opencv-python",
