@@ -2,15 +2,17 @@ from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
 import copy
 import logging
+from inputs.transports import get_bus_type_name
 
 logger = logging.getLogger("dualsense_controller")
 
 class DualSenseController(BaseController):
-    def __init__(self, device_info, transport = "usb"):
+    def __init__(self, device_info):
         super().__init__()
         self.device_info = device_info
         self.device = None
-        self.transport = transport
+        self.transport = get_bus_type_name(device_info["bus_type"])
+        self.connected = False
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
         self.parsers = {
@@ -26,13 +28,7 @@ class DualSenseController(BaseController):
     @classmethod
     def scan(cls):
         controllers = []
-        BUS_TYPES = {
-            0: "Unknown",
-            1: "USB",
-            2: "Bluetooth",
-            3: "I2C",
-            4: "SPI",
-        }
+       
 
         
         try:
@@ -46,9 +42,8 @@ class DualSenseController(BaseController):
             product = device_info.get("product_string", "")
 
             if "DualSense" in product:
-                transport = BUS_TYPES[device_info["bus_type"]]
                 controllers.append(
-                    cls(device_info, transport)
+                    cls(device_info)
                 )
 
         return controllers
@@ -59,14 +54,21 @@ class DualSenseController(BaseController):
             self.device = hid.device()           
             self.device.open_path(self.device_info["path"])
          
-            #self._state.connected = True
+            self._state.connected = True
             return True
         except Exception as e:
             logger.error(f"DualSense connection failed: {e}")
             return False
 
     def disconnect(self):
-        return
+        if self.device:
+            try:
+                self.device.close()
+            except Exception:
+                logger.exception("Error closing DualSense")
+
+        self.device = None
+        self.connected = False
     
     def applyDeadZone(self, value):
         diff = value - self.center
@@ -81,14 +83,20 @@ class DualSenseController(BaseController):
             return (diff + self.dead_zone) / (128 - self.dead_zone)
 
     def update(self):
-        size = self.report_sizes[self.transport]
-        data = self.device.read(size)
-       
-        if not data:
+        try:
+            size = self.report_sizes[self.transport]
+            data = self.device.read(size)
+            
+            if not data:
+                return None
+            
+            self._state = self.parsers[self.transport](data)
+            return self._state
+        except Exception:
+            self.disconnect()
+            logger.warning("DualSense disconnected")
             return None
-        self._state = self.parsers[self.transport](data)
-        #logger.info(self._state)
-        return self._state
+        
     
     def get_state(self):
         return copy.copy(self._state)
@@ -214,6 +222,3 @@ class DualSenseController(BaseController):
             "touchpad": bool(data[10] & 0x02),
             "mute": bool(data[10] & 0x04),
         }
-
-   
-

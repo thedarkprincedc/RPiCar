@@ -2,6 +2,7 @@ from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
 import copy
 import logging
+from inputs.transports import get_bus_type_name
 
 logger = logging.getLogger("dualshock_controller")
 
@@ -18,11 +19,11 @@ PS4_D_PAD_MAP = {
 }
 
 class DualShockController(BaseController):
-    def __init__(self, device_info, transport="usb"):
+    def __init__(self, device_info):
         super().__init__()
         self.device_info = device_info
         self.device = None
-        self.transport = transport
+        self.transport = get_bus_type_name(device_info["bus_type"])
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
         self.parser = {
@@ -59,9 +60,8 @@ class DualShockController(BaseController):
             if "DualShock" in product:
                 print(f"Found DualShock: {product}")
 
-                transport = BUS_TYPES[device_info["bus_type"]]
                 controllers.append(
-                    cls(device_info, transport)
+                    cls(device_info)
                 )
 
         return controllers

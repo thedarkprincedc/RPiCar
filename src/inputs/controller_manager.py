@@ -17,7 +17,7 @@ class ControllerManager:
         ]
 
     def has_controller(self):
-        return bool(self._controllers)
+        return len(self._controllers) > 0
 
     def register(self, controller):
         self._controllers.append(controller)
