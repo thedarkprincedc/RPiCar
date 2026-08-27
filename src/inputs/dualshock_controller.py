@@ -26,26 +26,24 @@ class DualShockController(BaseController):
         self.transport = get_bus_type_name(device_info["bus_type"])
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
-        self.parser = {
-            "bluetooth": self.parse_bluetooth,
-            "USB": self.parse_usb
+        self.transports = {
+            "BLUETOOTH": {
+                "parser": self.parse_bluetooth, 
+                "report_size": 64
+            },
+            "USB": {
+                "parser": self.parse_usb,
+                "report_size": 64
+            }
         }
-        self.report_sizes = {
-            "bluetooth": 64,
-            "USB": 64
-        }
+        config = self.transports[self.transport]
+        self.parser = config["parser"]
+        self.report_size = config["report_size"]
         self._state = ControllerState()
 
     @classmethod
     def scan(cls):
         controllers = []
-        BUS_TYPES = {
-            0: "Unknown",
-            1: "USB",
-            2: "Bluetooth",
-            3: "I2C",
-            4: "SPI",
-        }
 
         try:
             import hid
@@ -58,8 +56,6 @@ class DualShockController(BaseController):
             product = device_info.get("product_string", "")
 
             if "DualShock" in product:
-                print(f"Found DualShock: {product}")
-
                 controllers.append(
                     cls(device_info)
                 )
@@ -72,8 +68,7 @@ class DualShockController(BaseController):
             self.device = hid.device()           
             self.device.open_path(self.device_info["path"])
 
-            #self._state.connected = True
-            print("DualShock connected")
+            self._state.connected = True
             return True
         except Exception as e:
             logger.error(f"DualShock connection failed: {e}")
@@ -95,12 +90,12 @@ class DualShockController(BaseController):
             return (diff + self.dead_zone) / (127 - self.dead_zone)
         
     def update(self):
-        size = self.report_sizes[self.transport]
-        data = self.device.read(size)
+        data = self.device.read(self.report_size)
         
         if not data:
             return None
-        self._state = self.parsers[self.transport](data)
+        
+        self._state = self.parser(data)
         return self._state
 
     def get_state(self):

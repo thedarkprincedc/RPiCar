@@ -15,22 +15,25 @@ class DualSenseController(BaseController):
         self.connected = False
         self.dead_zone = 10     # tune this (usually 5-15)
         self.center = 128       # DS4 sticks rest near 128
-        self.parsers = {
-            "bluetooth": self.parse_bluetooth,
-            "USB": self.parse_usb
+        self.transports = {
+            "BLUETOOTH": {
+                "parser": self.parse_bluetooth, 
+                "report_size": 78
+            },
+            "USB": {
+                "parser": self.parse_usb,
+                "report_size": 64
+            }
         }
-        self.report_sizes = {
-            "bluetooth": 78,
-            "USB": 64
-        }
+        config = self.transports[self.transport]
+        self.parser = config["parser"]
+        self.report_size = config["report_size"]
         self._state = ControllerState()
 
     @classmethod
     def scan(cls):
         controllers = []
        
-
-        
         try:
             import hid
         except ImportError:
@@ -84,13 +87,13 @@ class DualSenseController(BaseController):
 
     def update(self):
         try:
-            size = self.report_sizes[self.transport]
-            data = self.device.read(size)
+           
+            data = self.device.read(self.report_size)
             
             if not data:
                 return None
             
-            self._state = self.parsers[self.transport](data)
+            self._state = self.parser(data)
             return self._state
         except Exception:
             self.disconnect()
