@@ -1,8 +1,8 @@
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
+from inputs.transports import get_bus_type_name
 import copy
 import logging
-from inputs.transports import get_bus_type_name
 
 logger = logging.getLogger("dualsense_controller")
 
@@ -25,7 +25,7 @@ class DualSenseController(BaseController):
                 "report_size": 64
             }
         }
-        config = self.transports[self.transport]
+        config = self.transports[self.transport.upper()]
         self.parser = config["parser"]
         self.report_size = config["report_size"]
         self._state = ControllerState()
@@ -41,25 +41,31 @@ class DualSenseController(BaseController):
             return controllers
 
         for device_info in hid.enumerate():
-
             product = device_info.get("product_string", "")
-
             if "DualSense" in product:
                 controllers.append(
                     cls(device_info)
                 )
 
         return controllers
+
+    def is_connected(self):
+        return self.connected
     
     def connect(self):
         try:
             import hid
-            self.device = hid.device()           
+            self.device = hid.device()  
+            logger.info(self.connected)       
+            logger.info(self.device_info)
             self.device.open_path(self.device_info["path"])
-         
+            self.connected = True
             self._state.connected = True
             return True
         except Exception as e:
+            # self.connected = False
+            # self._state.connected = False
+            # self.device = None
             logger.error(f"DualSense connection failed: {e}")
             return False
 
@@ -67,11 +73,13 @@ class DualSenseController(BaseController):
         if self.device:
             try:
                 self.device.close()
-            except Exception:
-                logger.exception("Error closing DualSense")
+            except Exception as e:
+                logger.warning("Error closing DualSense: %s", e)
 
         self.device = None
         self.connected = False
+        # self._state.connected = False
+        # logger.info("DualSense disconnected")
     
     def applyDeadZone(self, value):
         diff = value - self.center
@@ -86,21 +94,17 @@ class DualSenseController(BaseController):
             return (diff + self.dead_zone) / (128 - self.dead_zone)
 
     def update(self):
+        if not self.device:
+            return False
         try:
-           
-            data = self.device.read(self.report_size)
-            
-            if not data:
-                return None
-            
+            data = self.device.read(self.report_size)            
             self._state = self.parser(data)
-            return self._state
+            return True
         except Exception:
             self.disconnect()
             logger.warning("DualSense disconnected")
-            return None
+            return False
         
-    
     def get_state(self):
         return copy.copy(self._state)
     

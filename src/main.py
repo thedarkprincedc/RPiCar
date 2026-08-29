@@ -21,12 +21,16 @@ def usb_input_thread(state, lock, stop_event, refresh_rate = 0.005):
                 continue
 
         ctrlManager.update()
+        
         with lock:
             state.inputs = ctrlManager.get_states()
 
-def serial_thread(state, lock, stop_event, serial_driver, refresh_rate = 0.02):
+def serial_thread(state, lock, stop_event, refresh_rate = 0.02):
+    serial_driver = create_serial_driver("/dev/serial0", 115200)
+    logger.info(f"Created {serial_driver.__class__.__name__} Port: {serial_driver.port} Baudrate: {serial_driver.baudrate}")
     motor_controller = MotorController()
     last_battery_check = time.monotonic()
+
     while not stop_event.is_set():
         ctrl = None
 
@@ -72,13 +76,6 @@ def main():
         help="Enable debug logging",
     )
 
-    # parser.add_argument(
-    #     "--debug",
-    #     action="store_true",
-    #     default="logs/main.log"
-    #     help="Enable debug logging",
-    # )
-
     args = parser.parse_args()
 
     setup_logging(
@@ -88,12 +85,10 @@ def main():
     
     logger.info("Starting RPiCar...")
     state = State()
-    stop_event = threading.Event()
     lock = threading.Lock()
+    stop_event = threading.Event()
+   
 
-    serial_driver = create_serial_driver("/dev/serial0", 115200)
-    logger.info(f"Created {serial_driver.__class__.__name__} Port: {serial_driver.port} Baudrate: {serial_driver.baudrate}")
-    
     threads = [
         threading.Thread(
             target=usb_input_thread, 
@@ -101,7 +96,7 @@ def main():
         ),
         threading.Thread(
             target=serial_thread, 
-            args=(state, lock, stop_event, serial_driver)
+            args=(state, lock, stop_event)
         ),
         threading.Thread(
             target=telemetry_thread, 

@@ -10,9 +10,9 @@ class ControllerManager:
     def __init__(self):
         self._controllers = []
         self.available_controllers = [
-            XboxController,
+            #XboxController,
             DualShockController,
-            DualSenseController,
+            #DualSenseController,
             #WebSocketController
         ]
 
@@ -29,7 +29,12 @@ class ControllerManager:
 
     def update(self):
         for controller in self._controllers:
-            controller.update()
+            if not controller.is_connected():
+                #logger.info(len(self._controllers))
+                controller.connect()
+                #continue
+            else:
+                controller.update()
 
     def get_states(self):
         return [

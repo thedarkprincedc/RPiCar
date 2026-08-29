@@ -1,8 +1,8 @@
 from inputs.base_controller import BaseController
 from inputs.controller_state import ControllerState
+from inputs.transports import get_bus_type_name
 import copy
 import logging
-from inputs.transports import get_bus_type_name
 
 logger = logging.getLogger("xbox_controller")
 
@@ -12,6 +12,7 @@ class XboxController(BaseController):
         self.device_info = device_info
         self.device = None
         self.transport = get_bus_type_name(device_info["bus_type"])
+        self.connected = False
         self.transports = {
             "BLUETOOTH": {
                 "parser": self.parse_bluetooth, 
@@ -38,7 +39,6 @@ class XboxController(BaseController):
             return controllers
 
         for device_info in hid.enumerate():
-
             product = device_info.get("product_string", "")
 
             if "XBOX" in product:
