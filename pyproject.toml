@@ -13,6 +13,7 @@ dependencies = [
     "aiohttp",
     "aiortc",
     "opencv-python",
+    "btpy"
 ]
 
 [project.optional-dependencies]
@@ -23,6 +24,7 @@ dev = [
 [project.scripts]
 rpicar = "main:main"
 rpiweb = "server:main"
+rpible = "ble:main"
 
 [tool.poe.tasks]
 dev = "source .venv/Scripts/activate"
