@@ -56,9 +56,14 @@ class DualShockController(BaseController):
     def connect(self):
         try:
             import hid
-            self.device = hid.device()   
-            logger.info(self.connected)       
-            logger.info(self.device_info)        
+            self.device = hid.device()      
+            
+            logger.debug(", ".join([
+                f"serial_number: {self.device_info["serial_number"]}",
+                f"vid: {self.device_info["vendor_id"]}",
+                f"pid: {self.device_info["product_id"]}"
+            ]))
+                  
             self.device.open_path(self.device_info["path"])
             self.connected = True
             self._state.connected = True
