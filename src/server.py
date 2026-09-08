@@ -25,7 +25,8 @@ def main():
 
     setup_logging(
         log_file="logs/server.log", 
-        console_level=logging.DEBUG if args.debug else logging.INFO
+        console_level=logging.DEBUG if args.debug else logging.INFO,
+        log_to_file=True
     )
 
     logger.info("Starting RPiWeb...")

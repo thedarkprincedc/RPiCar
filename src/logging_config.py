@@ -2,10 +2,11 @@ from pathlib import Path
 import logging
 from logging.handlers import RotatingFileHandler
 
-def setup_logging(log_file="logs/rover.log", console_level=logging.INFO):
-    log_path = Path(log_file)
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-
+def setup_logging(
+    log_file="logs/rover.log", 
+    console_level=logging.INFO,
+    log_to_file=False
+):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
@@ -15,22 +16,27 @@ def setup_logging(log_file="logs/rover.log", console_level=logging.INFO):
 
     if logger.handlers:
         return logger
-
-    file_handler = RotatingFileHandler(
-        log_path,
-        maxBytes=5_000_000,
-        backupCount=3,
-        encoding="utf-8"
-    )
-
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
-
+    
+    # Always log to console/stdout
     console_handler = logging.StreamHandler()
     console_handler.setLevel(console_level)
     console_handler.setFormatter(formatter)
-
-    logger.addHandler(file_handler)
     logger.addHandler(console_handler)
+
+    # Only log to file when explicitly enabled
+    if log_to_file:
+        log_path = Path(log_file)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+
+        file_handler = RotatingFileHandler(
+            filename=log_path,
+            maxBytes=5_000_000,
+            backupCount=3,
+            encoding="utf-8"
+        )
+
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     return logger
