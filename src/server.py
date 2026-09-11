@@ -51,12 +51,14 @@ def main():
     app.add_routes(control_routes)
     app.add_routes(telemetry_routes)
 
-    print("Open http://localhost:5000")
+    port = 5001
+
+    print(f"Open http://localhost:{port}")
 
     web.run_app(
         app,
         host="0.0.0.0",
-        port=5000,
+        port=port,
         access_log=logging.getLogger("aiohttp.access"),
         access_log_format='%a "%r" %s %b "%{User-Agent}i"'
     )

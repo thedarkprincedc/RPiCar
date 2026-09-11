@@ -12,7 +12,8 @@ class Camera:
         platform_os = platform.system()
         capture_os = {
             'Windows': cv2.CAP_MSMF,
-            'Linux': cv2.CAP_V4L2
+            'Linux': cv2.CAP_V4L2,
+            'Darwin': cv2.CAP_AVFOUNDATION,
         }
 
         if(capture_os[platform_os] == None):

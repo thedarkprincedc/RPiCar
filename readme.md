@@ -54,6 +54,7 @@ pip install -r requirements-dev.txt
 Install Dependencies
 ```bash
 pip install .
+pip install -e .
 ```
 
 Install Dependencies (Environment - Development) 

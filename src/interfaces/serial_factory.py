@@ -5,6 +5,7 @@ from .dummy_serial_driver import DummySerialDriver
 DRIVERS = {
     "Linux": RealSerialDriver,
     "Windows": DummySerialDriver,
+    "Darwin": DummySerialDriver
 }
 
 def create_serial_driver(*args, **kwargs):
