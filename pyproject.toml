@@ -13,7 +13,8 @@ dependencies = [
     "aiohttp",
     "aiortc",
     "opencv-python",
-    "btpy"
+    "btpy",
+    "dotenv"
 ]
 
 [project.optional-dependencies]

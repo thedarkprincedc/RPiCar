@@ -7,7 +7,7 @@ from web.camera import Camera
 import logging
 from logging_config import setup_logging
 import argparse
-
+import config
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).parent
@@ -51,14 +51,12 @@ def main():
     app.add_routes(control_routes)
     app.add_routes(telemetry_routes)
 
-    port = 5001
-
-    print(f"Open http://localhost:{port}")
+    print(f"Open http://localhost:{config.AppConfig.PORT}")
 
     web.run_app(
         app,
         host="0.0.0.0",
-        port=port,
+        port=config.AppConfig.PORT,
         access_log=logging.getLogger("aiohttp.access"),
         access_log_format='%a "%r" %s %b "%{User-Agent}i"'
     )
