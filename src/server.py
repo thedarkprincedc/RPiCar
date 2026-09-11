@@ -10,8 +10,6 @@ import argparse
 import config
 logger = logging.getLogger(__name__)
 
-BASE_DIR = Path(__file__).parent
-
 def main():
     parser = argparse.ArgumentParser()
     
@@ -40,13 +38,8 @@ def main():
         fps=60
     )
 
-    app["templates"] = BASE_DIR / "web/templates"
-
-    app.router.add_static(
-        "/static/",
-        BASE_DIR / "web/static"
-    )
-
+    app["templates"] = config.AppConfig.TEMPLATE_DIR
+    app.router.add_static("/static/", config.AppConfig.STATIC_DIR)
     app.add_routes(camera_routes)
     app.add_routes(control_routes)
     app.add_routes(telemetry_routes)
