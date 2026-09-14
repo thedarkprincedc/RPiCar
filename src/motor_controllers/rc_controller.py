@@ -1,4 +1,6 @@
-class MotorRCController():
+from motor_controllers.base_motor_controller import BaseMotorController
+
+class MotorRCController(BaseMotorController):
     def __init__(self):
         self.left = 0
         self.right = 0
@@ -8,7 +10,7 @@ class MotorRCController():
             return 0
         return value
     
-    def controller_to_motors(self, controller):
+    def process_controller_input(self, controller):
         forward = -controller["sticks"]["ry"]
         turn = controller["sticks"]["lx"]
 

@@ -7,8 +7,38 @@ from web.camera import Camera
 import logging
 from logging_config import setup_logging
 import argparse
-import config
+from config import AppConfig
+
 logger = logging.getLogger(__name__)
+
+def create_app(debug=None):
+    if debug is None:
+        debug = AppConfig.DEBUG
+
+    setup_logging(
+        log_file="logs/server.log", 
+        console_level=logging.DEBUG if debug else logging.INFO,
+        log_to_file=True
+    )
+
+    logger.info(f"debug mode: {debug}")
+
+    app = web.Application()
+    app["config"] = AppConfig
+    
+    app["camera"] = Camera(
+        device=0,
+        width=1920,
+        height=1080,
+        fps=60
+    )
+
+    app.router.add_static("/static/",  app["config"].RPI_STATIC_DIR)
+    app.add_routes(camera_routes)
+    app.add_routes(control_routes)
+    app.add_routes(telemetry_routes)
+
+    return app
 
 def main():
     parser = argparse.ArgumentParser()
@@ -21,40 +51,15 @@ def main():
 
     args = parser.parse_args()
 
-    setup_logging(
-        log_file="logs/server.log", 
-        console_level=logging.DEBUG if args.debug else logging.INFO,
-        log_to_file=True
-    )
-
-    logger.info("Starting RPiWeb...")
-
-    app = web.Application()
-
-    app["camera"] = Camera(
-        device=0,
-        width=1920,
-        height=1080,
-        fps=60
-    )
-
-    app["templates"] = config.AppConfig.TEMPLATE_DIR
-    app.router.add_static("/static/", config.AppConfig.STATIC_DIR)
-    app.add_routes(camera_routes)
-    app.add_routes(control_routes)
-    app.add_routes(telemetry_routes)
-
-    print(f"Open http://localhost:{config.AppConfig.PORT}")
+    app = create_app(args.debug)
 
     web.run_app(
         app,
         host="0.0.0.0",
-        port=config.AppConfig.PORT,
+        port=AppConfig.RPI_PORT,
         access_log=logging.getLogger("aiohttp.access"),
         access_log_format='%a "%r" %s %b "%{User-Agent}i"'
     )
-
-    logger.info("Shutdown RPiWeb...")
 
 if __name__ == "__main__":
     main()

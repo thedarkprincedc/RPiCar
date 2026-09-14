@@ -1,0 +1,10 @@
+services:
+  picar:
+    build: .
+    platform: linux/amd64
+    container_name: picar
+    restart: unless-stopped
+    env_file:
+      - .env
+    #ports:
+    #  - "8080:8080"

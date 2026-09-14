@@ -1,11 +1,12 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-PI=admin@magaman
-PROJECT_DIR=/home/admin/RPiCar
+RPI_HOST="${RPI_HOST:-raspberrypi}"
+RPI_USER="${RPI_USER:-admin}"
+RPI_PATH="${RPI_PATH:-/home/admin/RPiCar}"
 
 echo "==> Synchronizing Project..."
-scp -r * $PI:$PROJECT_DIR
+scp -r * ${RPI_USER}@${RPI_USER}:${RPI_PATH}
 
 echo
 echo "==> Syncronizing Complete."

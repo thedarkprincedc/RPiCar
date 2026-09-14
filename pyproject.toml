@@ -12,9 +12,11 @@ dependencies = [
     "flask-cors",
     "aiohttp",
     "aiortc",
-    "opencv-python",
+    "opencv-python-headless",
     "btpy",
-    "dotenv"
+    "dotenv",
+    "picamera2",
+    "dbus_next"
 ]
 
 [project.optional-dependencies]

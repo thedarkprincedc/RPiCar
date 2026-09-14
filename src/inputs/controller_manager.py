@@ -12,7 +12,7 @@ class ControllerManager:
         self.available_controllers = [
             #XboxController,
             DualShockController,
-            #DualSenseController,
+            DualSenseController,
             #WebSocketController
         ]
 

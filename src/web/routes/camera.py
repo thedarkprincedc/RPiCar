@@ -13,9 +13,11 @@ pcs = set()
 
 @routes.get("/")
 async def index(request):
-    print(request.app["templates"])
+    #print(request.app["templates"])
+
     return web.FileResponse(
-        request.app["templates"] / "camera.html"
+        # request.app["templates"] / "camera.html"
+        request.app["config"].RPI_TEMPLATE_DIR / "camera.html"
     )
 
 

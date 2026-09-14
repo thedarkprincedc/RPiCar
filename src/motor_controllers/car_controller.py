@@ -1,9 +1,11 @@
-class MotorCarController():
+from motor_controllers.base_motor_controller import BaseMotorController
+
+class MotorCarController(BaseMotorController):
     def __init__(self):
         self.left = 0
         self.right = 0
 
-    def controller_to_motors(self, controller):
+    def process_controller_input(self, controller):
         reverse = controller["triggers"]["l2_pct"]
         forward = controller["triggers"]["r2_pct"]
         turn = controller["sticks"]["lx"]

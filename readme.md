@@ -39,7 +39,8 @@ Create/Run Virtual Environment (Linux)
 python -m venv venv
 source venv/bin/activate
 ```
-
+deactivate
+rm -rf venv
 ### Install Dependencies (Requirements)
 Install Dependencies
 ```bash

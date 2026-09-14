@@ -1,10 +1,10 @@
-from interfaces.serial_driver import SerialDriver
+from interfaces.base_serial_driver import BaseSerialDriver
 import logging
 from logging_config import setup_logging
 
 logger = logging.getLogger("dummy_serial_driver")
 
-class DummySerialDriver(SerialDriver):
+class DummySerialDriver(BaseSerialDriver):
     def __init__(self, port=None, baudrate=115200):
         self.port = port
         self.baudrate = baudrate
@@ -13,11 +13,6 @@ class DummySerialDriver(SerialDriver):
     def write(self, data):
         self.last_command = data
         logger.debug(data.decode().strip())
-       
+ 
     def close(self):
-        logger.debug("Dummy Serial closed")
-        pass
-
-    def get_battery(self):
-        logger.debug("battery voltage")
-        return 0
+        logger.debug("Serial closed")
