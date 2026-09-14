@@ -39,15 +39,28 @@ Create/Run Virtual Environment (Linux)
 python -m venv venv
 source venv/bin/activate
 ```
-
-Install Dependencies (Development)
+deactivate
+rm -rf venv
+### Install Dependencies (Requirements)
+Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+Install Dependencies (Environment - Development)
 ```bash
 pip install -r requirements-dev.txt
 ```
 
+### Install Dependencies (PyProject)
 Install Dependencies
 ```bash
-pip install -r requirements.txt
+pip install .
+pip install -e .
+```
+
+Install Dependencies (Environment - Development) 
+```bash
+pip install -e ".[dev]"
 ```
 
 Run Application (On Car - Linux)
@@ -56,3 +69,32 @@ python src/main.py
 ```
 
 PORT = "/dev/serial0"
+SupplementaryGroups=dialout,input,bluetooth
+
+
+### Synchronize Files from (Windows)
+```bash
+scripts/dev.sh
+```
+### Start Daemon
+```bash
+scripts/setup.sh
+```
+### Uninstall Daemon
+```bash
+scripts/uninstall.sh
+```
+
+### Run Application
+```bash
+scripts/run.sh
+```
+
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e .
+
+
+python -m pip install .
+
+deactivate

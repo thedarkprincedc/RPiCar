@@ -1,6 +1,0 @@
-hidapi
-hid
-pyserial
-flask
-flask-socketio
-#eventlet

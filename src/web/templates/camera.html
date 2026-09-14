@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RPiCamera</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2>RPiCamera</h2>
+        <div class="mb-3 ratio ratio-16x9 bg-dark rounded overflow-hidden">
+            <div id="video-placeholder"
+                class="position-absolute top-0 start-0 w-100 h-100
+                        d-flex flex-column align-items-center justify-content-center
+                        text-secondary">
+                <div class="spinner-border mb-3" role="status"></div>
+                <span>Connecting to camera...</span>
+            </div>
+            <video id="video"
+                class="w-100 h-100 d-none"
+                autoplay
+                muted
+                playsinline>
+            </video>
+        </div>
+        <h2>Controls</h2>
+        <div class="mb-3 col-8">
+            <button class="btn btn-primary" id="forward">forward</button>
+            <button class="btn btn-primary" id="backward">backward</button>
+            <button class="btn btn-primary" id="left">left</button>
+            <button class="btn btn-primary" id="right">right</button>
+            <button class="btn btn-primary" id="stop">stop</button>
+        </div>
+        <h2>Telemetry</h2>
+    </div>
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/camera.js"></script>
+    <script src="/static/js/controls.js"></script>
+    <script>
+        const allButtons = document.querySelectorAll("button")
+        const video = document.getElementById("video")
+        const placeholder = document.getElementById("video-placeholder")
+        allButtons.forEach((button) => button.disabled = true)
+        video.addEventListener("loadedmetadata", () => {
+            placeholder.classList.add("d-none");
+            video.classList.remove("d-none");
+            allButtons.forEach((button) => button.disabled = false)
+        });
+    </script>
+</body>
+</html>

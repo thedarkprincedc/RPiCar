@@ -1,13 +1,23 @@
-#!bin/bash
-set -e
+#!/bin/bash
+set -euo pipefail
 
-echo "Sync to $RPI_HOST..."
-scp -r * $RPI_USER@$RPI_HOST:$RPI_DIR
+RPI_HOST="${RPI_HOST:-raspberrypi}"
+RPI_USER="${RPI_USER:-admin}"
+RPI_PATH="${RPI_PATH:-/home/admin/RPiCar}"
 
-echo "Setup DualSense"
-ssh $RPI_USER@$RPI_HOST <<'EOF'
-cd $RPI_DIR
-sudo ./scripts/setup_dualsense.sh
-EOF
+echo "==> Synchronizing Project..."
+rsync -avz \
+  --exclude '.git/' \
+  --exclude 'venv/' \
+  --exclude '__pycache__/' \
+  --exclude 'logs/' \
+  --exclude '.env' \
+  --exclude '.pytest_cache/' \
+  --exclude '.mypy_cache/' \
+  --exclude '.idea/' \
+  --exclude '.vscode/' \
+  ./ "${RPI_USER}@${RPI_HOST}:${RPI_PATH}/"
 
-echo "Done."
+echo
+echo "==> Syncronizing Complete."
+echo

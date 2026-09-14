@@ -15,8 +15,8 @@ DUALSENSE_TO_GENERIC_MAPPING = {
 XBOX_TO_GENERIC_MAPPING = {
     "buttons": {
         # stick button click
-        "lsb": "",
-        "rsb": "",
+        "lsb": "l3",
+        "rsb": "r3",
 
         # face buttons
         "view": "share",

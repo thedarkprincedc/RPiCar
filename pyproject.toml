@@ -1,3 +1,34 @@
+[project]
+name = "rpicar"
+version = "0.1.0"
+description = "Remote control car software for Raspberry Pi using an waveshare rover chasis."
+readme = "readme.md"
+
+dependencies = [
+    "hidapi",
+    "pyserial",
+    "flask",
+    "flask-socketio",
+    "flask-cors",
+    "aiohttp",
+    "aiortc",
+    "opencv-python-headless",
+    "btpy",
+    "dotenv",
+    "picamera2",
+    "dbus_next"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+
+[project.scripts]
+rpicar = "main:main"
+rpiweb = "server:main"
+rpible = "ble:main"
+
 [tool.poe.tasks]
 dev = "source .venv/Scripts/activate"
 run = "python src/main.py"
