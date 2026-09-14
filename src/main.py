@@ -11,7 +11,7 @@ from interfaces.serial_motor import SerialMotor
 from telemetry.publisher import TelemetryPublisher
 import logging
 from logging_config import setup_logging
-
+import json
 from config import AppConfig
 
 logger = logging.getLogger("main")
@@ -56,13 +56,18 @@ def serial_thread(state, lock, stop_event, config, refresh_rate = 0.02):
         # Battery check every 2 minutes
         now = time.monotonic()
         #120
-        if now - last_serial_telemetry_check >= 5:
+        if now - last_serial_telemetry_check >= config.RPI_SERIAL_TELEMETRY_CHECK_SECS:
+
             imu = serial_telemetry.imu_info(serial_driver)
+            logger.debug(f"imu: {json.dumps(imu)}")
+
             ina = serial_telemetry.ina219_info(serial_driver)
+            logger.debug(f"ina: {json.dumps(ina)}")
+
             last_serial_telemetry_check = now
 
         # print to screen
-        if now - last_serial_display_write >= 4:
+        if now - last_serial_display_write >= config.RPI_SERIAL_DISPLAY_WRITE_SECS:
             lines = [
                 "RPiCar",
                 "Waiting for controller",
@@ -74,6 +79,7 @@ def serial_thread(state, lock, stop_event, config, refresh_rate = 0.02):
 
         time.sleep(refresh_rate)
     serial_driver.close()
+    logger.debug("Serial closed")
 
 def telemetry_thread(state, lock, stop_event, config, refresh_rate = 0.04):
     telemetryPublisher = TelemetryPublisher()

@@ -19,6 +19,8 @@ class AppConfig:
     RPI_USB_CONTROLLER_SCAN_SECS = 1.5
     RPI_SERIAL_DRIVER = None
     RPI_MOTOR_CONTROLLER_TYPE = None
+    RPI_SERIAL_TELEMETRY_CHECK_SECS = 5
+    RPI_SERIAL_DISPLAY_WRITE_SECS = 4
     
 
     DEBUG = os.getenv("DEBUG", "false").lower() == "true"

@@ -11,7 +11,7 @@ class SerialTelemetry:
         command = {"T": 70}
         data = json.dumps(command) + "\n"
         serial_driver.write(data.encode())
-        #return self.read_json()
+        return serial_driver.read_json()
 
     
     def imu_info(self, serial_driver):
@@ -21,4 +21,4 @@ class SerialTelemetry:
         command = {"T": 71}
         data = json.dumps(command) + "\n"
         serial_driver.write(data.encode())
-        #return self.read_json()
+        return serial_driver.read_json()

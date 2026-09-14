@@ -15,4 +15,7 @@ class DummySerialDriver(BaseSerialDriver):
         logger.debug(data.decode().strip())
  
     def close(self):
-        logger.debug("Serial closed")
+        pass
+
+    def read_json(self):
+        return {"text": "read_json"}

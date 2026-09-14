@@ -5,5 +5,5 @@ class BaseSerialDriver:
     def close(self):
         pass
 
-    def get_battery(self):
+    def read_json(self):
         pass
