@@ -32,6 +32,7 @@ def serial_thread(state, lock, stop_event, config, refresh_rate = 0.02):
     serial_display = SerialDisplay()
     serial_telemetry = SerialTelemetry()
     serial_motor = SerialMotor()
+    serial_display.reset()
 
     serial_driver = SerialDriverFactory.create(config.RPI_SERIAL_DRIVER)
     logger.info(f"Created {serial_driver.__class__.__name__} Port: {serial_driver.port} Baudrate: {serial_driver.baudrate}")
@@ -41,6 +42,8 @@ def serial_thread(state, lock, stop_event, config, refresh_rate = 0.02):
 
     last_serial_telemetry_check = time.monotonic()
     last_serial_display_write = time.monotonic()
+
+    mega = {}
 
     while not stop_event.is_set():
         ctrl = None
@@ -53,28 +56,31 @@ def serial_thread(state, lock, stop_event, config, refresh_rate = 0.02):
             serial_motor.write_motor(motors["left"], motors["right"], serial_driver)
             
 
-        # Battery check every 2 minutes
+        # gather telemetry 
         now = time.monotonic()
         #120
         if now - last_serial_telemetry_check >= config.RPI_SERIAL_TELEMETRY_CHECK_SECS:
 
-            imu = serial_telemetry.imu_info(serial_driver)
-            logger.debug(f"imu: {json.dumps(imu)}")
+            #mega["imu"] = serial_telemetry.imu_info(serial_driver)
 
-            ina = serial_telemetry.ina219_info(serial_driver)
-            logger.debug(f"ina: {json.dumps(ina)}")
+            # logger.debug(f"imu: {json.dumps(imu)}")
+
+            # ina = serial_telemetry.ina219_info(serial_driver)
+            # logger.debug(f"ina: {json.dumps(ina)}")
+            #logger.info(mega)
 
             last_serial_telemetry_check = now
 
-        # print to screen
+        # print to led screen
         if now - last_serial_display_write >= config.RPI_SERIAL_DISPLAY_WRITE_SECS:
-            lines = [
-                "RPiCar",
-                "Waiting for controller",
-                "Battery: 85%",
-                "Speed: 0",
-            ]
-            serial_display.display(lines, serial_driver)
+            # lines = [
+            #     "RPiCar",
+            #     "Waiting for ctrl",
+            #     "Battery: 85%",
+            #     "Speed: 0",
+            # ]
+
+            serial_display.process(serial_driver)
             last_serial_display_write = now
 
         time.sleep(refresh_rate)
